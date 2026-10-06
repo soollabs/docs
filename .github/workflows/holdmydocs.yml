@@ -1,0 +1,45 @@
+name: Deploy Hold My Docs Documentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/holdmydocs.yml"
+      - ".github/workflows/_deploy-documentation-site.yml"
+      - ".github/workflows/_deploy-worker.yml"
+      - ".github/workflows/_render-static-docs.yml"
+      - "wrangler.jsonc"
+      - ".wiki.yaml"
+      - "holdmydocs/**"
+      - "attachments/holdmydocs/**"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
+    paths:
+      - ".github/workflows/holdmydocs.yml"
+      - ".github/workflows/_deploy-documentation-site.yml"
+      - ".github/workflows/_deploy-worker.yml"
+      - ".github/workflows/_render-static-docs.yml"
+      - "wrangler.jsonc"
+      - ".wiki.yaml"
+      - "holdmydocs/**"
+      - "attachments/holdmydocs/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy-site:
+    uses: ./.github/workflows/_deploy-documentation-site.yml
+    with:
+      site-name: holdmydocs
+      namespace: holdmydocs
+      site-host: hmd.sool.dev
+      wrangler-config: wrangler.jsonc
+    secrets: inherit

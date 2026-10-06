@@ -1,0 +1,66 @@
+name: Render Static Documentation
+
+on:
+  workflow_call:
+    inputs:
+      namespace:
+        description: HMD namespace to export
+        required: true
+        type: string
+      artifact-name:
+        description: Name for the rendered static-site artifact
+        required: true
+        type: string
+      renderer-ref:
+        description: HoldMyDocs renderer tag, branch, or commit
+        required: false
+        # renovate: datasource=github-tags depName=soollabs/holdmydocs versioning=semver
+        default: v0.1.0
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: soollabs/holdmydocs
+          ref: ${{ inputs.renderer-ref }}
+          path: renderer
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: renderer/go.mod
+
+      - name: Render static documentation
+        env:
+          EXPORT_DIR: ${{ github.workspace }}/public
+          HMD_APP_DIR: ${{ runner.temp }}/hmd-app
+          HMD_REPO_DIR: ${{ github.workspace }}
+          NAMESPACE: ${{ inputs.namespace }}
+        run: |
+          chmod 700 "$HMD_REPO_DIR"
+          mkdir -p "$HMD_APP_DIR" "$EXPORT_DIR"
+          chmod 700 "$HMD_APP_DIR"
+          (
+            cd renderer
+            go run ./cmd/hmd \
+              -export-namespace "$NAMESPACE" \
+              -export-dir "$EXPORT_DIR"
+          )
+          test -f "$EXPORT_DIR/index.html"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: public
+          if-no-files-found: error
+          retention-days: 14

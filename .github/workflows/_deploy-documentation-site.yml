@@ -1,0 +1,112 @@
+name: Deploy Documentation Site
+
+on:
+  workflow_call:
+    inputs:
+      namespace:
+        description: HMD namespace to export
+        required: true
+        type: string
+      preview-environment:
+        description: GitHub environment that protects preview deployments
+        required: false
+        default: preview
+        type: string
+      production-environment:
+        description: GitHub environment that protects production deployments
+        required: false
+        default: production
+        type: string
+      site-host:
+        description: Public hostname for this documentation site
+        required: true
+        type: string
+      site-name:
+        description: Stable identifier for artifacts and concurrency control
+        required: true
+        type: string
+      wrangler-config:
+        description: Site-specific Wrangler configuration path
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: docs-${{ inputs.site-name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview-name:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      name: ${{ steps.preview-name.outputs.name }}
+    steps:
+      - id: preview-name
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NODE_ID: ${{ github.event.pull_request.node_id }}
+        run: |
+          suffix="$(printf '%s' "$PR_NODE_ID" | sha256sum | cut -c1-12)"
+          echo "name=pr-${PR_NUMBER}-${suffix}" >> "$GITHUB_OUTPUT"
+
+  render:
+    if: github.event_name != 'pull_request' || github.event.action != 'closed'
+    uses: ./.github/workflows/_render-static-docs.yml
+    with:
+      namespace: ${{ inputs.namespace }}
+      artifact-name: ${{ inputs.site-name }}-static-site
+
+  deploy:
+    needs: render
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    uses: ./.github/workflows/_deploy-worker.yml
+    permissions:
+      contents: read
+      deployments: write
+    with:
+      artifact-name: ${{ inputs.site-name }}-static-site
+      command: deploy
+      environment-name: ${{ inputs.production-environment }}
+      job-name: Deploy production
+      site-host: ${{ inputs.site-host }}
+      wrangler-config: ${{ inputs.wrangler-config }}
+    secrets: inherit
+
+  preview:
+    needs:
+      - render
+      - preview-name
+    if: github.event_name == 'pull_request' && github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/_deploy-worker.yml
+    permissions:
+      contents: read
+      deployments: write
+    with:
+      artifact-name: ${{ inputs.site-name }}-static-site
+      command: preview --name=${{ needs.preview-name.outputs.name }}
+      environment-name: ${{ inputs.preview-environment }}
+      job-name: Deploy preview
+      preview-name: ${{ needs.preview-name.outputs.name }}
+      site-host: ${{ inputs.site-host }}
+      wrangler-config: ${{ inputs.wrangler-config }}
+    secrets: inherit
+
+  cleanup-preview:
+    needs: preview-name
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/_deploy-worker.yml
+    permissions:
+      contents: read
+      deployments: write
+    with:
+      command: preview delete --name=${{ needs.preview-name.outputs.name }} --skip-confirmation
+      environment-name: ${{ inputs.preview-environment }}
+      job-name: Delete preview
+      preview-name: ${{ needs.preview-name.outputs.name }}
+      site-host: ${{ inputs.site-host }}
+      wrangler-config: ${{ inputs.wrangler-config }}
+    secrets: inherit

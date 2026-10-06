@@ -1,0 +1,40 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    ":combinePatchMinorReleases",
+    "config:recommended",
+    "docker:enableMajor",
+    "docker:pinDigests",
+    ":semanticCommits"
+  ],
+  "reviewers": ["soolbyte"],
+  "labels": [
+    "dependencies"
+  ],
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{changelogs}}}{{{controls}}}",
+  "prConcurrentLimit": 5,
+  "minimumReleaseAge": "1 day",
+  "packageRules": [
+    {
+      "matchCategories": ["js"],
+      "groupName": "javascript dependencies",
+      "separateMajorMinor": false
+    },
+    {
+      "matchCategories": ["golang"],
+      "groupName": "go dependencies",
+      "separateMajorMinor": false
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/_render-static-docs\\.yml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>github-tags) depName=(?<depName>soollabs/holdmydocs) versioning=(?<versioning>semver)\\s*\\n\\s*default:\\s*(?<currentValue>\\S+)"
+      ]
+    }
+  ]
+}
