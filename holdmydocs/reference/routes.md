@@ -52,7 +52,7 @@ These routes are registered only when OAuth is enabled. Browser POSTs require th
 | `GET/HEAD /.well-known/oauth-authorization-server` | None | Authorisation-server metadata. |
 | `GET/HEAD /.well-known/oauth-protected-resource/_/mcp` | None | MCP protected-resource metadata. |
 | `GET/HEAD /.well-known/oauth-protected-resource` | None | Root alias of the same resource document. |
-| `GET /_/oauth/authorize` | Browser session or login continuation | Validate the request and show consent, or continue through login. |
+| `GET /_/oauth/authorize` | Browser session or login continuation | Validate the request and show consent, or continue through login. Once the client's redirect URI is exactly validated, authorisation errors redirect back to the client with `error`, `error_description`, `state` and `iss`; unvalidated client or callback values render an error page and never redirect. |
 | `POST /_/oauth/authorize` | Browser session and CSRF | Approve or deny a bound pending request. |
 | `POST /_/oauth/token` | Registered client | Exchange an authorisation code with S256 PKCE or rotate a refresh token; browser cookies provide no authority. |
 | `POST /_/oauth/revoke` | Registered client | Revoke the client's own grant using an access or refresh token. |

@@ -28,9 +28,9 @@ OAuth metadata is published at `/.well-known/oauth-authorization-server` and `/.
 
 Sign in with an administrator account and open **Admin → Manage MCP OAuth clients** (`/_/admin/oauth`). Enter the MCP client's name, exact callback URLs, authentication method and allowed actions. Copy the generated client ID and secret into the MCP client's OAuth settings. Confidential secrets are shown once. The list includes callback URLs, allowed actions, authentication methods, registration source and disabled status; it never displays secret verifiers.
 
-Use **Disable client and revoke all access** to permanently disable a registration and revoke its grants and tokens. To replace a secret, register a replacement client, disable the old registration and update the MCP client's credentials.
+Use **Disable client** to permanently disable a registration and revoke its grants and tokens. The interface asks for confirmation first. To replace a secret, register a replacement client, disable the old registration and update the MCP client's credentials.
 
-Disabled clients have a **Delete client** button. **Delete all disabled clients** removes every disabled registration and leaves active clients untouched. Deletion removes the client's associated grants, token families and token records, including its connection history. Active clients cannot be deleted; disable them first.
+Disabled clients have a **Delete client** button. **Delete all disabled** removes every disabled registration and leaves active clients untouched; both deletion actions ask for confirmation. Deletion removes the client's associated grants, token families and token records, including its connection history. Active clients cannot be deleted; disable them first.
 
 ### Local administration
 
