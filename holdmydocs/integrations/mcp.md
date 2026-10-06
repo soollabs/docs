@@ -5,6 +5,8 @@ tags: hmd, integrations, mcp
 
 Connect a compatible MCP client to read and write your wiki over the Model Context Protocol, with the same scope and namespace restrictions as its credential.
 
+MCP server metadata advertises the title `HoldMyDocs`, the description `Search, read and manage pages and attachments in HoldMyDocs.`, and the HMD icon at `<base_url>/_/static/icon.svg`. Display of this metadata depends on the MCP client.
+
 ## Prerequisites
 
 - An HMD instance reachable from the agent's network, with **MCP enabled**.
@@ -53,6 +55,7 @@ Authenticated requests enforce the credential's bounds intersected with the user
 - **settings** implies read and write and bypasses namespace restrictions.
 - A token restricted to particular namespaces can only list, read, or write pages in those namespaces. `recent_changes` omits any commit that touches a file outside the caller's access.
 - OAuth tool errors identify the missing action scope or namespace and explain when reconnecting with narrower or additional consent can help.
+- Some MCP applications and services request only `read` by default. For editing, configure the application's OAuth scopes to request `read write`, allow both actions in its HMD registration, and reconnect to grant consent. Registration permissions alone do not add `write` to the application's request.
 
 HMD's MCP tools operate on ordinary pages only. Hidden pages and `.wiki.yaml` are outside the agent's reach.
 

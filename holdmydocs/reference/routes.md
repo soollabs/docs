@@ -56,6 +56,12 @@ These routes are registered only when OAuth is enabled. Browser POSTs require th
 | `POST /_/oauth/authorize` | Browser session and CSRF | Approve or deny a bound pending request. |
 | `POST /_/oauth/token` | Registered client | Exchange an authorisation code with S256 PKCE or rotate a refresh token; browser cookies provide no authority. |
 | `POST /_/oauth/revoke` | Registered client | Revoke the client's own grant using an access or refresh token. |
+| `POST /_/oauth/register` | None; DCR must be enabled | Register an MCP client using bounded RFC 7591 JSON metadata. Registration grants no document access. |
+| `GET /_/admin/oauth` | Administrator browser session | List MCP OAuth clients and display the registration form. |
+| `POST /_/admin/oauth` | Administrator browser session and CSRF | Register an MCP client and show its secret once. |
+| `POST /_/admin/oauth/{id}/disable` | Administrator browser session and CSRF | Permanently disable a client and revoke its grants and tokens. |
+| `POST /_/admin/oauth/{id}/delete` | Administrator browser session and CSRF | Delete a disabled client and its associated security records. Active clients are rejected. |
+| `POST /_/admin/oauth/delete-disabled` | Administrator browser session and CSRF | Delete all disabled clients and their associated security records; active clients remain. |
 | `GET /_/connections` | Browser session | List the current user's connections. |
 | `POST /_/connections/{id}/revoke` | Owning browser session and CSRF | Disconnect the user's grant. |
 

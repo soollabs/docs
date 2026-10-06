@@ -3,7 +3,7 @@ title: MCP OAuth
 tags: hmd, integrations, oauth, mcp
 ---
 
-HMD can act as an OAuth authorisation server for MCP clients. OAuth is disabled by default. Existing personal access tokens continue to work independently.
+HMD provides OAuth authentication for MCP clients. OAuth is disabled by default. Personal access tokens work independently.
 
 ## Enable OAuth
 
@@ -20,11 +20,21 @@ oauth:
 
 Restart HMD after changing configuration. Production deployments require HTTPS. For local development only, `oauth.allow_insecure_loopback: true` allows an HTTP loopback origin; it does not allow a public HTTP issuer. `base_url` is the OAuth issuer, so configure it to the exact origin clients use. Spoofed `Host` and forwarded headers do not change it.
 
-OAuth metadata is published at `/.well-known/oauth-authorization-server` and `/.well-known/oauth-protected-resource/_/mcp`. Clients should discover these endpoints rather than construct them from an assumed vendor-specific URL. HMD supports the authorisation-code grant with S256 PKCE and the MCP resource indicator. Send the exact MCP resource URI (`<base_url>/_/mcp`) in the authorisation and code-exchange requests. A refresh request may omit the resource to inherit its grant, but a different resource is rejected. Dynamic client registration is not supported.
+OAuth metadata is published at `/.well-known/oauth-authorization-server` and `/.well-known/oauth-protected-resource/_/mcp`. Clients should discover these endpoints. HMD supports the authorisation-code grant with S256 PKCE and the MCP resource indicator. Send the exact MCP resource URI (`<base_url>/_/mcp`) in the authorisation and code-exchange requests. A refresh request may omit the resource to inherit its grant, but a different resource is rejected. Client ID Metadata Documents (CIMD) are not supported.
 
 ## Register a client
 
-An administrator provisions a client locally. Redirect URIs must be exact; HTTPS is required except for loopback clients during development.
+### Admin interface
+
+Sign in with an administrator account and open **Admin → Manage MCP OAuth clients** (`/_/admin/oauth`). Enter the MCP client's name, exact callback URLs, authentication method and allowed actions. Copy the generated client ID and secret into the MCP client's OAuth settings. Confidential secrets are shown once. The list includes callback URLs, allowed actions, authentication methods, registration source and disabled status; it never displays secret verifiers.
+
+Use **Disable client and revoke all access** to permanently disable a registration and revoke its grants and tokens. To replace a secret, register a replacement client, disable the old registration and update the MCP client's credentials.
+
+Disabled clients have a **Delete client** button. **Delete all disabled clients** removes every disabled registration and leaves active clients untouched. Deletion removes the client's associated grants, token families and token records, including its connection history. Active clients cannot be deleted; disable them first.
+
+### Local administration
+
+The CLI reads the configured app directory. Stop HMD before running a CLI command that opens its OAuth store. Redirect URIs must be exact; HTTPS is required except for loopback callbacks.
 
 ```sh
 hmd \
@@ -47,6 +57,24 @@ hmd -oauth-client-disable -oauth-client-id "hmd_c_..."
 
 Disabling a client revokes its grants, access tokens and refresh tokens. The disable operation is permanent; users must approve a new connection to the replacement client.
 
+## Dynamic client registration
+
+To let MCP clients register themselves using RFC 7591, enable:
+
+```yaml
+oauth:
+  enabled: true
+  dynamic_registration: true
+```
+
+Restart HMD. Authorisation-server discovery then advertises `registration_endpoint` at `<base_url>/_/oauth/register`. With this option disabled, discovery omits that field and the endpoint returns 404.
+
+Registration accepts a JSON document with `redirect_uris` and optional `client_name`, `token_endpoint_auth_method`, `scope`, `grant_types` and `response_types`. Defaults are `client_secret_basic`, `read`, the authorisation-code flow and the `code` response type. Authentication methods are `none`, `client_secret_basic` and `client_secret_post`. Callback URLs use the same exact-match validation as administrator registrations. Metadata URLs are not fetched. HMD does not implement RFC 7592 client self-management.
+
+Public registration is limited to five attempts per minute across the instance, in addition to the OAuth per-address request limit. At most 32 dynamically registered clients are stored, within the overall 256-client limit; disabled registrations count until deleted. These limits reserve capacity for administrator registrations but do not prevent an attacker exhausting public registration capacity. Enable DCR only when that trade-off is acceptable. Review, disable and delete unwanted clients in the admin interface. DCR clients cannot request `settings`.
+
+Registration does not grant access to documents. Every connection requires S256 PKCE, user authentication and consent. A dynamically supplied client name is not a verified application identity.
+
 ## User consent and scopes
 
 When a client starts authorisation, the user signs in with the local password form or the configured OIDC provider. The user can deny the request or approve only some requested actions and namespaces. The consent page identifies the client, callback host, account and MCP resource.
@@ -56,6 +84,8 @@ When a client starts authorisation, the user signs in with the local password fo
 - `settings` grants administrative access. It is disabled by default; enabling `oauth.allow_admin_delegation` permits it for eligible users and registered clients. **Settings access is unrestricted across all current and future namespaces** and cannot be narrowed by namespace selection.
 
 Granted scopes cannot exceed either the client's allowed scopes or the user's current HMD permissions. Those permissions are checked again when an OAuth token is used and when it is refreshed. `write` does not imply `read`; request `read write` for a client that needs both. `settings` implies both actions and bypasses namespace restrictions. A non-administrative grant may be limited to selected namespaces, or the user may explicitly approve all namespaces. See [[MCP Tool Reference]] for the tool-to-scope mapping.
+
+Some MCP applications and services default to requesting only `read`. To enable edits, explicitly configure the application's OAuth scope setting to request `read write`, ensure its HMD registration allows both actions, and reconnect to approve the additional scope. Allowing `write` in HMD's client registration does not make the application request it: registration sets the maximum permissions, and consent cannot add an action absent from the application's request.
 
 ## Token lifecycle and revocation
 
