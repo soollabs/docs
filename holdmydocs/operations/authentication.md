@@ -25,7 +25,7 @@ Per-user preferences such as skin, palette, and fonts are stored against the acc
 
 OAuth is an opt-in alternative to PATs for MCP clients. Users sign in with the normal local form or configured OIDC provider, then approve the client's requested actions and namespace access. They can review and disconnect grants at `/_/connections`; this revokes the grant's access and refresh tokens.
 
-OAuth access tokens are not PATs: they authenticate only `/_/mcp`, not browser pages or other API routes. Refresh tokens never authenticate MCP requests; clients send them to `/_/oauth/token` to obtain a new access/refresh pair. Refresh tokens rotate on use; reuse of an old refresh token revokes its token family. Clients must serialise refresh requests. Either token can be submitted to the RFC 7009 revocation endpoint at `/_/oauth/revoke`. See [[MCP OAuth]] for setup, client provisioning, backup and recovery.
+OAuth access tokens are not PATs: they authenticate only `/_/mcp`, not browser pages or other API routes. Refresh tokens never authenticate MCP requests; clients send them to `/_/oauth/token` to obtain a new access/refresh pair. Refresh tokens rotate on use; reuse of an old refresh token revokes its token family. Authorisation codes are single use; replaying a consumed code revokes the credentials derived from it. Clients must serialise token requests. Either token can be submitted to the RFC 7009 revocation endpoint at `/_/oauth/revoke`. See [[MCP OAuth]] for setup, client provisioning, backup and recovery.
 
 ## OIDC
 

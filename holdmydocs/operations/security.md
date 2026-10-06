@@ -18,7 +18,7 @@ Public namespaces expose normal page views and their attachments without login. 
 - Local passwords are bcrypt hashes; PAT values are stored as SHA-256 digests.
 - Sessions are HttpOnly, SameSite Lax cookies with a 30-day server-side limit. Cookie writes require exact Origin and CSRF-token checks.
 - OIDC binds accounts to issuer and subject. Admission needs an allowlist or a verified email-domain rule.
-- MCP OAuth is disabled by default. Access and refresh tokens are stored as digests in private app state. Only access tokens authenticate the MCP resource; refresh tokens are exchanged at the token endpoint, never used as bearer credentials. Access requests and refreshes recheck the live grant, client and user permissions. Consent grants are user-disconnectable; refresh-token replay revokes the token family.
+- MCP OAuth is disabled by default. Access and refresh tokens are stored as digests in private app state. Only access tokens authenticate the MCP resource; refresh tokens are exchanged at the token endpoint, never used as bearer credentials. Access requests and refreshes recheck the live grant, client and user permissions. Consent grants are user-disconnectable; replay of an authorisation code or refresh token revokes the token family.
 - Repository reads and writes are confined below the Git worktree. Unix builds use descriptor-relative no-follow opens; symlinks are excluded from pages, configuration, attachments, and export.
 - Request logs omit credentials, queries, bodies, and client addresses. Do not add page bodies or tokens to application or proxy logs.
 - HMD sends one Tika extraction request at a time, cancels it after 60 seconds, skips embedded documents, and accepts at most 8 MiB of extracted text.

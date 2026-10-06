@@ -89,9 +89,9 @@ Some MCP applications and services default to requesting only `read`. To enable 
 
 ## Token lifecycle and revocation
 
-HMD issues two-minute authorisation codes, 15-minute access tokens and refresh tokens bound to a 30-day grant family. Refresh tokens rotate when used; replaying an old refresh token revokes the surviving family. Refresh does not extend the grant-family expiry.
+HMD issues two-minute authorisation codes, 15-minute access tokens and refresh tokens bound to a 30-day grant family. Refresh tokens rotate when used; replaying an old refresh token revokes the surviving family. Replaying a consumed authorisation code also revokes the credentials derived from it. Refresh does not extend the grant-family expiry.
 
-Clients must serialise refresh requests. Concurrent exchanges of the same refresh token are replay attempts: even if one succeeds, the duplicate can revoke its newly issued tokens. Refresh can narrow permissions but cannot restore scopes removed from a previous refresh.
+Clients must serialise token requests. Concurrent exchanges of the same refresh token are replay attempts: even if one succeeds, the duplicate can revoke its newly issued tokens. Refresh can narrow permissions but cannot restore scopes removed from a previous refresh.
 
 If a token response is lost, do not retry a possibly consumed refresh token or assume an authorisation code remains usable. Start a new authorisation and consent flow. HMD does not retain plaintext successor tokens to replay a lost response.
 
