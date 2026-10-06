@@ -7,7 +7,7 @@ Connect HMD to the way you write, host, and publish. None of these integrations 
 
 ## Connect an AI assistant
 
-[[MCP Integration]] walks through credentials, the MCP endpoint, and client configuration. Use [[MCP Tool Reference]] for exact tool inputs and outputs, and [[LLM Wiki]] for an example of an assistant-maintained knowledge base.
+[[MCP Integration]] walks through credentials, the MCP endpoint, and client configuration. Use [[MCP OAuth]] for browser-based authorisation and [[MCP Tool Reference]] for exact tool inputs and outputs. [[LLM Wiki]] shows an example of an assistant-maintained knowledge base.
 
 ## Publish a documentation website
 

@@ -22,7 +22,7 @@ Open `/_/admin` to configure the content repository, Git remote, upload limit, a
 - **behaviour** — maximum upload size, sync poll interval, and the read-only document extraction endpoint.
 - **users** — bootstrap admin details and user management.
 
-OIDC, MCP enablement, and the document-search model and index directories are not editable from the UI. Set them in `config.yaml` or via environment variables and restart.
+OIDC, MCP and OAuth enablement, and the document-search model and index directories are not editable from the UI. Set them in `config.yaml` or via environment variables and restart.
 
 
 
@@ -35,6 +35,8 @@ OIDC, MCP enablement, and the document-search model and index directories are no
 | `sync_mode`, `max_upload_bytes`, `sync_poll_ms` | Immediately |
 | OIDC (all keys) | Restart |
 | `mcp.enabled` | Restart |
+| OAuth (all keys) | Restart |
+| `base_url` while OAuth is enabled | Restart; live issuer changes are rejected |
 | `HMD_TIKA_URL` | Restart |
 | `document_search.model`, `model_dir`, `index_dir` | Restart |
 
@@ -46,4 +48,4 @@ Extraction is serialised, times out after 60 seconds, skips embedded documents, 
 
 ## Secrets hygiene
 
-Keep secrets out of committed files. `users.json`, `config.yaml`, and any secret files referenced by configuration are sensitive. Prefer a secret file (`git.token_file`, `oidc.client_secret_file`), a Docker secret, or a secret-injection environment variable over a literal token in `config.yaml`. Full keys and file rules: [[Configuration Reference]].
+Keep secrets out of committed files. `users.json`, `oauth.json`, `config.yaml`, and any secret files referenced by configuration are sensitive. Prefer a secret file (`git.token_file`, `oidc.client_secret_file`), a Docker secret, or a secret-injection environment variable over a literal token in `config.yaml`. Full keys and file rules: [[Configuration Reference]].

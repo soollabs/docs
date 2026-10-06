@@ -54,7 +54,7 @@ The tool limits a request to 128 replacements and the normal 1 MiB page-body lim
 - **write** — `save_page`, `edit_page`, `delete_page`, `upload_attachment`.
 - **settings** — `read_namespace`, `save_namespace`.
 
-A tool call beyond the caller's scopes fails with a message like `forbidden: write scope required`. There is no namespace-deletion tool: a namespace is removed from the web UI, not by an agent.
+A tool call beyond the caller's scopes returns an MCP tool error that names the required scope. OAuth errors explain that reconnecting with additional consent may help when the user's current HMD permissions allow it. Namespace denials explain that the user may reconnect and approve access to that namespace. There is no namespace-deletion tool: a namespace is removed from the web UI, not by an agent.
 
 ## The basehash contract
 
@@ -75,7 +75,7 @@ Hidden pages, hidden templates, and `.wiki.yaml` are never visible to MCP tools.
 ## Common pitfalls
 
 - **Writes keep failing with a conflict** — you saved with a stale `basehash`. Re-read the page or namespace and retry with the fresh hash.
-- **`forbidden: write scope required`** — the token has read access only. Issue a token with the write scope for agent write workflows.
+- **`insufficient_scope`** — the OAuth grant lacks the action scope. Reconnect and approve it only if the user's current HMD permissions allow it. For a PAT, issue a replacement token with the required scope.
 - **`search_attachments` is missing from the tool list** — document search is not enabled on the instance, so the tool is not registered.
 
 Next: [[MCP Integration]].

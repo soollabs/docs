@@ -7,13 +7,15 @@ This page maps HMD's routes, grouped by area, with the HTTP method and authentic
 
 ## Conventions
 
-Content owns the root. Application routes are reserved under `/_/` — the one top-level segment a namespace may never take. Unknown `/_/` paths never become content pages.
+Content owns the root. Application routes are reserved under `/_/` — the one top-level segment a namespace may never take. Unknown `/_/` paths never become content pages. OAuth discovery documents additionally use the reserved `/.well-known/` paths listed below when OAuth is enabled.
 
 Authentication works in three layers:
 
 - **None** — reachable without credentials (probes, login, static assets, one-use upload URLs).
 - **Anonymous page** — a plain page view or attachment is served unauthenticated when the namespace is public, and is byte-identical to a 404 when it is not. Every other request needs a login session or a Bearer personal access token (PAT).
 - **Session or PAT** — a session cookie or `Authorization: Bearer` token. Scope requirements: `read` for GET/HEAD, `write` for POST/DELETE, and `settings` for administrator and namespace-management operations (not personal settings). On an API or MCP route an auth failure is HTTP 401 with a JSON body — never a login redirect. A PAT restricted to namespaces can only reach paths that resolve to those namespaces.
+
+OAuth access tokens are another credential for `/_/mcp` only. Refresh tokens are not bearer credentials. OAuth browser consent and connection-management routes require a browser session, not a PAT or OAuth access token; protocol token/revocation endpoints use registered-client authentication instead.
 
 ## Probes and root
 
@@ -40,6 +42,30 @@ Authentication works in three layers:
 | `GET /_/auth/oidc/login` | None | Starts the OIDC flow. |
 | `GET /_/auth/oidc/callback` | None | OIDC redirect target. |
 | `GET /_/auth/oidc/icon` | None | Provider icon (cached from the provider). |
+
+## MCP OAuth
+
+These routes are registered only when OAuth is enabled. Browser POSTs require the live session, exact Origin and CSRF token; approving or disconnecting a grant does not require the `write` or `settings` action.
+
+| Route | Auth | Purpose |
+| --- | --- | --- |
+| `GET/HEAD /.well-known/oauth-authorization-server` | None | Authorisation-server metadata. |
+| `GET/HEAD /.well-known/oauth-protected-resource/_/mcp` | None | MCP protected-resource metadata. |
+| `GET/HEAD /.well-known/oauth-protected-resource` | None | Root alias of the same resource document. |
+| `GET /_/oauth/authorize` | Browser session or login continuation | Validate the request and show consent, or continue through login. Once the client's redirect URI is exactly validated, authorisation errors redirect back to the client with `error`, `error_description`, `state` and `iss`; unvalidated client or callback values render an error page and never redirect. |
+| `POST /_/oauth/authorize` | Browser session and CSRF | Approve or deny a bound pending request. |
+| `POST /_/oauth/token` | Registered client | Exchange an authorisation code with S256 PKCE or rotate a refresh token; browser cookies provide no authority. |
+| `POST /_/oauth/revoke` | Registered client | Revoke the client's own grant using an access or refresh token. |
+| `POST /_/oauth/register` | None; DCR must be enabled | Register an MCP client using bounded RFC 7591 JSON metadata. Registration grants no document access. |
+| `GET /_/admin/oauth` | Administrator browser session | List MCP OAuth clients and display the registration form. |
+| `POST /_/admin/oauth` | Administrator browser session and CSRF | Register an MCP client and show its secret once. |
+| `POST /_/admin/oauth/{id}/disable` | Administrator browser session and CSRF | Permanently disable a client and revoke its grants and tokens. |
+| `POST /_/admin/oauth/{id}/delete` | Administrator browser session and CSRF | Delete a disabled client and its associated security records. Active clients are rejected. |
+| `POST /_/admin/oauth/delete-disabled` | Administrator browser session and CSRF | Delete all disabled clients and their associated security records; active clients remain. |
+| `GET /_/connections` | Browser session | List the current user's connections. |
+| `POST /_/connections/{id}/revoke` | Owning browser session and CSRF | Disconnect the user's grant. |
+
+Registered clients use their declared method: `none`, `client_secret_basic` or `client_secret_post`. Public clients still supply their registered client ID; possession of that ID is not proof of identity. See [[MCP OAuth]].
 
 ## Settings, admin and namespaces
 
@@ -97,7 +123,7 @@ There is no hidden-page POST route.
 | --- | --- | --- |
 | `POST /_/mcp` | Any authenticated | MCP JSON-RPC calls; each tool enforces its own scope and namespace rules. |
 
-MCP is stateless: it does not support GET streams or DELETE session teardown. Clients must send the required `MCP-Protocol-Version: 2026-07-28` header and protocol metadata. See [[MCP Integration]].
+MCP is stateless: it does not support GET streams or DELETE session teardown. Modern `2026-07-28` requests require the matching version header and per-request protocol/client/capability metadata, and use `server/discover`. Legacy Streamable HTTP clients can negotiate `2025-03-26`, `2025-06-18` or `2025-11-25` through `initialize` without the modern header/metadata requirement. Subsequent legacy requests use the negotiated header, with the specification's absent-header fallback. See [[MCP Integration]].
 
 The tool list and scope map are on [[MCP Tool Reference]].
 

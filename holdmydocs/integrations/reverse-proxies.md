@@ -17,7 +17,7 @@ Put HMD behind a TLS-terminating reverse proxy that preserves the public origin 
 
 ## Configure HMD
 
-1. Set `base_url` to HMD's canonical public origin, for example `https://wiki.example.com`. It must be a bare origin: scheme and host, with no path, query, or fragment. `base_url` is the exact browser **Origin** HMD accepts for cookie-authenticated writes, the origin it uses for MCP attachment-upload capability URLs, and the origin it registers for the OIDC callback. It is required when MCP or OIDC is enabled.
+1. Set `base_url` to HMD's canonical public origin, for example `https://wiki.example.com`. It must be a bare origin: scheme and host, with no path, query, or fragment. `base_url` is the exact browser **Origin** HMD accepts for cookie-authenticated writes, the origin it uses for MCP attachment-upload capability URLs, the origin it registers for the OIDC callback, and the issuer/resource origin for MCP OAuth. It is required when MCP, OAuth or OIDC is enabled.
 2. Set `trusted_proxies` to the CIDRs of the peers HMD should trust for forwarding headers. This is typically the reverse proxy's own address or the network it runs on. List only peers you control, never a broad public block:
 
    ```yaml

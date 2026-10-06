@@ -19,7 +19,7 @@ HMD reads `<HMD_APP_DIR>/config.yaml` by default. `HMD_CONFIG_FILE` chooses a di
 | `default_branch` / `HMD_DEFAULT_BRANCH` | string, `main` | Valid Git branch name. | No |
 | `skin` / `HMD_SKIN` | string, `phosphor` | `phosphor`, `newsprint`, `journal`, `soft`, or `bare`. | No |
 | `debug` / `HMD_DEBUG` | boolean, `false` | Enables debug logs. | No |
-| `base_url` / `HMD_BASE_URL` | origin | HTTP(S) origin only, without path, query, fragment or user-info. Required for MCP or OIDC; its OIDC callback is `/_/auth/oidc/callback`. | No |
+| `base_url` / `HMD_BASE_URL` | origin | HTTP(S) origin only, without path, query, fragment or user-info. Required for MCP, OAuth or OIDC; its OIDC callback is `/_/auth/oidc/callback`. OAuth requires HTTPS except for explicitly enabled loopback development, and issuer changes require restart. | No |
 | `trusted_proxies` | YAML list | CIDRs allowed to set `X-Forwarded-Proto`. | No |
 | `git.remote_url` / `HMD_GIT_REMOTE_URL` | HTTPS URL, empty | SSH remotes are unsupported. | No |
 | `git.user` / `HMD_GIT_USER` | string, `hmd` | Remote user name. | No |
@@ -27,6 +27,10 @@ HMD reads `<HMD_APP_DIR>/config.yaml` by default. `HMD_CONFIG_FILE` chooses a di
 | `git.token_file` / `HMD_GIT_TOKEN_FILE` | path, empty | Owned regular file, mode at most `0600`, non-empty, at most 64 KiB. | Yes |
 | `git.author` / `HMD_GIT_AUTHOR` | string, empty | Optional default `Name <email>` commit identity. | No |
 | `mcp.enabled` / `HMD_MCP_ENABLED` | boolean, `false` | Requires `base_url`. | No |
+| `oauth.enabled` / `HMD_OAUTH_ENABLED` | boolean, `false` | Enables the MCP OAuth authorisation server; requires `mcp.enabled` and `base_url`. | No |
+| `oauth.dynamic_registration` / `HMD_OAUTH_DYNAMIC_REGISTRATION` | boolean, `false` | Advertises and enables public RFC 7591 registration for MCP clients. Five attempts per minute globally; up to 32 dynamic registrations. Restart required. | No |
+| `oauth.allow_admin_delegation` / `HMD_OAUTH_ALLOW_ADMIN_DELEGATION` | boolean, `false` | Allows client registrations and users to grant the `settings` scope. This scope is unrestricted across namespaces. | No |
+| `oauth.allow_insecure_loopback` / `HMD_OAUTH_ALLOW_INSECURE_LOOPBACK` | boolean, `false` | Development only; permits an HTTP loopback issuer. Do not enable for public deployments. | No |
 | `oidc.issuer` / `HMD_OIDC_ISSUER` | HTTPS URL, empty | Enables OIDC; requires the fields below and an admission choice. | No |
 | `oidc.client_id` / `HMD_OIDC_CLIENT_ID` | string | Required with issuer. | No |
 | `oidc.client_secret` / `HMD_OIDC_CLIENT_SECRET` | string | Mutually exclusive with `client_secret_file`. | Yes |

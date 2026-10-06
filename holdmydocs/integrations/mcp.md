@@ -3,12 +3,14 @@ title: MCP Integration
 tags: hmd, integrations, mcp
 ---
 
-Connect a compatible MCP client to read and write your wiki over the Model Context Protocol, with the same scope and namespace restrictions as your tokens.
+Connect a compatible MCP client to read and write your wiki over the Model Context Protocol, with the same scope and namespace restrictions as its credential.
+
+MCP server metadata advertises the title `HoldMyDocs`, the description `Search, read and manage pages and attachments in HoldMyDocs.`, and the HMD icon at `<base_url>/_/static/icon.svg`. Display of this metadata depends on the MCP client.
 
 ## Prerequisites
 
 - An HMD instance reachable from the agent's network, with **MCP enabled**.
-- A personal access token with the scopes you want to grant the agent.
+- Either a personal access token or an OAuth connection with the scopes you want to grant the client. OAuth setup is documented in [[MCP OAuth]].
 
 ## Enable the MCP endpoint
 
@@ -21,30 +23,39 @@ Connect a compatible MCP client to read and write your wiki over the Model Conte
 
    `HMD_BASE_URL` is required whenever MCP is on. It must be a bare origin (scheme and host, no path), because HMD uses it to build the upload capability URLs it returns to the agent.
 
-2. Create a personal access token in **Settings** with the scopes for the agent. MCP uses the same token store as the API.
+2. Choose a credential:
 
-3. Point the agent at the endpoint URL with the token as a Bearer credential:
+   - For a PAT, create a personal access token in **Settings** with the scopes for the client. MCP uses the same token store as the API.
+   - For OAuth, follow [[MCP OAuth]] to register a client and connect through the browser consent flow.
+
+3. Point the agent at the endpoint URL with its Bearer credential:
 
    ```sh
    POST https://wiki.example.com/_/mcp
-   Authorization: Bearer hmd_your_token
-   MCP-Protocol-Version: 2026-07-28
+   Authorization: Bearer ACCESS_TOKEN
    ```
 
-   The client must support stateless Streamable HTTP requests with the `2026-07-28` protocol version and per-request client metadata. HMD does not support session headers, session query parameters or GET event streams. Check your client's protocol support before relying on it.
+   HMD supports stateless Streamable HTTP, including protocol versions `2026-07-28`, `2025-11-25`, `2025-06-18` and `2025-03-26`. Clients should use the lifecycle for their chosen protocol version:
+
+   - `2026-07-28` uses `server/discover` and modern per-request metadata: protocol version, client information and client capabilities. It requires the matching `MCP-Protocol-Version` header.
+   - The three `2025` versions use `initialize`, then `notifications/initialized`, followed by tool requests. The initial request can omit the version header and modern metadata. Subsequent requests should send the negotiated version header; absent headers use the legacy transport's `2025-03-26` fallback.
+
+   Prefer a compatible MCP SDK rather than constructing protocol messages manually. HMD does not issue persistent sessions or provide GET event streams. Historical pre-Streamable HTTP+SSE transport is not supported. Check your client's transport support before relying on it.
 
 ## How authentication works
 
-The MCP endpoint never redirects to the login page the way a browser request does. A missing, malformed, or expired Bearer token returns **HTTP 401** with a JSON body like `{"error":"unauthorized"}`.
+The MCP endpoint never redirects to the login page the way a browser request does. With OAuth enabled, an unauthenticated request returns **HTTP 401** and the protected-resource metadata challenge. A missing, malformed, or expired Bearer token returns a JSON body like `{"error":"unauthorized"}`. OAuth access tokens are accepted only for `/_/mcp`; they are not PATs.
 
-An authenticated token enforces exactly the scope and namespace restrictions from the token:
+Authenticated requests enforce the credential's bounds intersected with the user's current permissions. OAuth also checks the live grant and client policy; a previously issued token does not preserve permissions later removed:
 
 - **read** access provides `list_pages`, `read_page`, `list_namespaces`, `search`, `backlinks`, `recent_changes`, and `health`.
-- **write** access adds `save_page`, `delete_page`, and `upload_attachment`.
-- **write** access also adds `edit_page` for exact replacements and dry-run diffs.
+- **write** access permits `save_page`, `delete_page`, `upload_attachment`, and `edit_page` for exact replacements and dry-run diffs. It does not imply **read**; request both actions when both are needed.
 - **settings** access provides `read_namespace` and `save_namespace`.
 - `read_attachment` requires read access. When document search is enabled, `search_attachments` also requires read access.
+- **settings** implies read and write and bypasses namespace restrictions.
 - A token restricted to particular namespaces can only list, read, or write pages in those namespaces. `recent_changes` omits any commit that touches a file outside the caller's access.
+- OAuth tool errors identify the missing action scope or namespace and explain when reconnecting with narrower or additional consent can help.
+- Some MCP applications and services request only `read` by default. For editing, configure the application's OAuth scopes to request `read write`, allow both actions in its HMD registration, and reconnect to grant consent. Registration permissions alone do not add `write` to the application's request.
 
 HMD's MCP tools operate on ordinary pages only. Hidden pages and `.wiki.yaml` are outside the agent's reach.
 
