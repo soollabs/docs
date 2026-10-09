@@ -53,6 +53,8 @@ The personal settings page and its token and appearance actions require an accou
 | `/_/namespaces/new` | GET | New namespace form. |
 | `/_/namespaces/{name}/edit` | GET | Edit one namespace's `.namespace.yaml`. |
 | `/_/settings/namespaces/{name}/export` | GET | Export the namespace as a static site. |
+| `/_/settings/namespaces/{name}/preview` | GET | Generate a private static-site snapshot and redirect to its temporary preview. |
+| `/_/export-preview/{id}/{path...}` | GET/HEAD | Serve preview pages and assets to the snapshot's creator with current `settings` access; snapshots expire after 15 minutes. |
 | `/_/api/settings/server` | POST | Save instance configuration. |
 | `/_/api/settings/appearance` | POST | Save skin, palette and fonts. |
 | `/_/api/settings/export` | POST | Bake current values into `config.yaml`. |
