@@ -43,6 +43,28 @@ The setup screen adapts to what is missing. You may see an existing namespace se
 
 An administrator can reopen setup from **Settings** at `/_/settings`. You can also skip setup and return later; skipping does not create any of the missing items.
 
+## Browse a public repository without a GitHub token
+
+With an installed HMD binary that supports `read_only`, you can run the official documentation repository as a live local instance:
+
+```sh
+hmd_state="$(mktemp -d)"
+HMD_BIND=127.0.0.1:8080 \
+HMD_APP_DIR="$hmd_state/app" \
+HMD_REPO_DIR="$hmd_state/repo" \
+HMD_READ_ONLY=true \
+HMD_GIT_REMOTE_URL=https://github.com/soollabs/docs.git \
+hmd
+```
+
+Open `http://127.0.0.1:8080/holdmydocs/`. HMD clones the public repository without a GitHub token or bootstrap account, skips setup and lets you browse its public namespace. Keep the state directory if you want to reuse the clone; stop HMD before deleting it.
+
+Read-only mode blocks content edits, uploads, setup, administrator operations and pushes, even for administrators. It fetches and fast-forwards remote updates in the background at `sync_poll_ms` intervals (10 seconds by default), regardless of `sync_mode`. Reload the page to see updated content. Fetch failures retain the last local snapshot; divergent histories are not merged, and uncommitted local changes are never discarded to apply an update. If reusing a checkout, its `origin` must match the configured URL; use a fresh `repo_dir` for a different remote.
+
+For an existing local Git repository, set `HMD_REPO_DIR` to its private checkout and omit `HMD_GIT_REMOTE_URL`. Without a remote, HMD does not fetch or push. A blank local or remote repository needs normal writable setup first; read-only mode does not initialise it.
+
+Application state and the cloned snapshot still need private local directories; read-only mode is an application policy, not a read-only filesystem mount. Remote refreshes update the snapshot and Git metadata. Private Git repositories still need credentials, and private HMD namespaces still require an authorised HMD account: read-only mode never makes private pages public.
+
 ## Where these settings are stored
 
 You do not need to edit files to complete setup. For administrators managing the content repository directly, the selected options can create:

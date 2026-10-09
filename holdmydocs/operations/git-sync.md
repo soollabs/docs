@@ -17,9 +17,13 @@ Set the mode in `config.yaml` (`sync_mode`) or at `/_/admin` under git remote, w
 
 ## Remotes
 
-Use an HTTPS remote with a user name and personal access token. SSH remotes are not supported. Prefer a token file (`git.token_file`) or a secret-injection environment variable over a literal token in `config.yaml`. See [[Configuration]] for the secrets guidance.
+Use an HTTPS remote. Public repositories can be cloned and fetched without a token; private repositories and authenticated pushes need suitable credentials. SSH remotes are not supported. Prefer a token file (`git.token_file`) or a secret-injection environment variable over a literal token in `config.yaml`. See [[Configuration]] for the secrets guidance.
 
 With no remote configured, the statusline shows "local only" and every save still commits locally.
+
+## Read-only browsing
+
+Set `read_only: true` or `HMD_READ_ONLY=true` to browse without allowing edits or pushes. With a remote configured, HMD fetches and fast-forwards in the background at `sync_poll_ms` intervals, even when `sync_mode` is `push`. Without a remote, it only reads the existing local repository. Existing namespace visibility and authentication rules still apply. See [[First-Run Setup]] for the token-free official Docs example.
 
 ## Push failures
 

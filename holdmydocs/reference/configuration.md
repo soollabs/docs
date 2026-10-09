@@ -13,6 +13,7 @@ HMD reads `<HMD_APP_DIR>/config.yaml` by default. `HMD_CONFIG_FILE` chooses a di
 | `HMD_ADMIN_PASSWORD` | string | First start only; 12-72 bytes, no controls, not a placeholder. | Yes |
 | `bind` / `HMD_BIND` | address, `:8080` | Host and port, port 1-65535. | No |
 | `repo_dir` / `HMD_REPO_DIR` | path, `/data/repo` | Private writable directory; must not overlap `app_dir` or model storage. | No |
+| `read_only` / `HMD_READ_ONLY` | boolean, `false` | Browse an existing local repository or clone a non-empty remote. Blocks editing, uploads, setup, administrator operations and pushes; still pulls remote updates. Restart to change. | No |
 | `max_upload_bytes` / `HMD_MAX_UPLOAD_BYTES` | integer, `10485760` | 1 to 1073741824 bytes. | No |
 | `sync_poll_ms` / `HMD_SYNC_POLL_MS` | integer, `10000` | At least 100 ms. | No |
 | `sync_mode` / `HMD_SYNC_MODE` | string, `push` | `push` or `bidirectional`. | No |
