@@ -28,6 +28,8 @@ Open `/_/settings/server` and use the System navigation:
 
 Each setting has an info icon with its description, environment variable, restart requirement and storage location. Restart-required icons use the warning colour. Saving writes non-secret settings to the file; Git remote, sync mode, upload limit and poll interval apply immediately. The Restart column in [[Configuration Reference]] lists which changes need a restart.
 
+OAuth settings require a restart. While OAuth is enabled, changing `server.base_url` also requires a restart; live issuer changes are rejected.
+
 ![Server settings with info icons](/_/attachments/holdmydocs/operations/configuration/server.png)
 
 ## Read-only mode
@@ -44,4 +46,4 @@ Extraction is serialised, times out after 60 seconds, skips embedded documents a
 
 Git and OIDC secrets cannot be stored in `config.yaml` or edited in the UI. Supply `HMD_GIT_TOKEN` or a private file referenced by `git.token_file`; supply `HMD_OIDC_CLIENT_SECRET` or a private file referenced by `oidc.client_secret_file`. A legacy `git.token` file key is ignored; `oidc.client_secret` makes the file fail to load. Exporting configuration never writes secrets.
 
-Keep account state, configuration, secret files and backups private. Secret file ownership, permissions and size rules are listed in [[Configuration Reference]]. Never paste a secret into a screenshot or commit it with the content repository.
+Keep account state, `oauth.json`, configuration, secret files and backups private. OAuth state contains client registrations, grants and token records. Secret file ownership, permissions and size rules are listed in [[Configuration Reference]]. Never paste a secret into a screenshot or commit it with the content repository.

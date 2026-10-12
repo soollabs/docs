@@ -61,6 +61,8 @@ The table comes from the pinned HMD release's settings schema. Its Restart colum
 
 MCP and OIDC require `server.base_url`, the public origin. An `unsafe data directory` error means recreate or restore a private directory owned by the service user.
 
+MCP OAuth uses `server.base_url` as its issuer and resource origin. HTTPS is required unless `mcp.oauth.allow_insecure_loopback` explicitly permits local development. OAuth settings and issuer changes require a restart; live issuer changes are rejected while OAuth is enabled. Dynamic registration allows five attempts per minute globally and at most 32 dynamic registrations. See [[MCP OAuth]].
+
 Environment-only rows are not `config.yaml` keys. Git tokens and OIDC client secrets must come from the environment or a private referenced file; exporting configuration never includes secrets. See [[Configuration]] and [[Upgrade HMD]].
 
 Portable site name and landing settings are in repository-tracked `.wiki.yaml`, not `config.yaml`. Namespace visibility and widgets are in each namespace's `.namespace.yaml`. See [[Configuration]] and [[Wiki Configuration Reference]].
