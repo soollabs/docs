@@ -13,6 +13,7 @@ palette: nord
 index: index
 export:
   base_url: https://hmd.sool.dev/
+  robots_allow: [Googlebot, bingbot, DuckDuckBot, Applebot]
   links:
   - label: GitHub
     url: https://github.com/soollabs/holdmydocs
