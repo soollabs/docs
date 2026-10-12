@@ -19,12 +19,13 @@ Link another HMD page with a title-only wiki-link:
 See [[Pages]] for details.
 ```
 
-Wiki-links resolve by exact page title, preferring a match in the current namespace and falling back to other namespaces. They do not support a pipe alias: `[[Backups|backup]]` targets a page whose title is literally `backups-backup`, so use a Markdown link when you need different link text.
+Wiki-links resolve by exact page title, preferring a match in the current namespace and falling back to other namespaces. They do not support a pipe alias: `[[Backups|backup]]` does not mean “link to Backups with the label backup”. Use a Markdown link when you need different link text.
 
 A wiki-link to a page that does not exist yet renders with a trailing `+` and opens the create flow, so a red link becomes a new page in one click. Links inside fenced code blocks are never treated as wiki-links.
 
 The rendered page shows wiki-links and, below the content, the backlinks widget listing every page that links to the current one:
 
+![A linked walking-group page with navigation and backlinks](/_/attachments/holdmydocs/writing/links-and-navigation/backlinks.png)
 
 ## Table of contents
 

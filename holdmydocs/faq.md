@@ -1,71 +1,60 @@
 ---
 title: FAQ
-tags: hmd, operations
+tags: hmd, getting-started, operations
 ---
 
-Answers to common questions before you start using or hosting HMD.
+## Before You Start
 
-## Do I need to know Git to use HMD?
+### Do I need to know Git?
 
-No. Write and save in the browser; HMD records the commits for you. Git knowledge helps if you want to manage the repository outside HMD or resolve divergent remote histories. Start with [[Your First Wiki]].
+No. Write and save in the browser; HMD records commits for you. Start with [[Your First Wiki]]. Git knowledge helps when managing the repository outside HMD or resolving divergent remote histories.
 
-## Do I need a Git hosting account or an AI service?
+### Do I need a Git hosting account, AI service or database?
 
-No. HMD can keep its Git repository entirely local. A remote Git host, MCP clients, and document extraction are optional integrations, not requirements for a working wiki. [[Install HMD]] starts without them.
+No. HMD can keep its Git repository entirely local, with application state in JSON files. Remote hosting, MCP clients and document extraction are optional. [[Install HMD]] starts without them.
 
-## Is HMD a hosted service?
+### Is HMD a hosted service?
 
-HMD is self-hosted: you run the application on hardware or infrastructure you control. If someone runs it for your team, you only need their wiki address and an account. The host is responsible for updates, backups, and access controls.
+HMD is self-hosted: you run it on hardware or infrastructure you control. If someone runs it for your team, you need only their wiki address, an account and a namespace you can write in. The host handles updates, backups and access controls.
 
-## Can I publish documentation without running HMD for readers?
+### How does search work?
 
-Yes. [[Static Export]] produces a read-only website with page navigation and browser-local page search. Readers need no HMD account. Publishing an update means exporting and uploading a new snapshot.
+Search uses a local index of page titles, bodies and tags. It needs no external service. Optional document extraction also indexes attachment contents; see [[Attachments]].
 
-## Where is HMD data stored?
+### Can anonymous visitors search public pages?
 
-Two directories, both configurable at first start:
+Live-wiki search requires login even when pages are public. A static export has its own browser-local search and does not call the live wiki.
 
-- `HMD_REPO_DIR` (default `/data/repo`) — the Git repository holding pages, attachments, and wiki and namespace configuration.
-- `HMD_APP_DIR` (default `/data/app`) — accounts (`users.json`), local configuration (`config.yaml`), active sessions, the search index, and the downloaded embedding model.
+### Can I publish documentation without running HMD for readers?
 
-See [[Configuration Reference]] and [[Storage And Recovery]].
+Yes. [[Static Export]] produces a read-only website with navigation and browser-local search. Readers need no account. Updates require exporting and publishing a new snapshot.
 
-## Is the Git remote a backup?
+## Hosting And Maintenance
 
-No. The remote mirrors commits that HMD has already pushed, and a failed push leaves local commits un-pushed. Nothing replicates `app` (accounts, configuration, secrets). Back up both directories yourself and test the restore: [[Storage And Recovery]].
+### Where is the data stored?
 
-## Can I use an SSH remote?
+Two directories: `HMD_SERVER_REPO_DIR` (default `/data/repo`) holds pages, attachments and wiki/namespace configuration; `HMD_APP_DIR` (default `/data/app`) holds account state, local configuration, sessions and derived search/model data. See [[Configuration Reference]] and [[Storage And Recovery]].
 
-No. Remotes are HTTPS-only and authenticate with a user name and personal access token. SSH remotes are not supported. See [[Git Sync]].
+### Is the Git remote a backup?
 
-## Does HMD support real-time collaboration?
+No. It mirrors only commits already pushed. Failed pushes leave local commits unmirrored, and Git does not replicate application state. Back up both directories and test recovery; see [[Storage And Recovery]].
 
-No. HMD uses optimistic locking: each save checks the page hash it was based on, and a page changed on disk since then shows the conflict screen instead of overwriting it. See [[Pages]].
+### Can I use an SSH remote?
 
-## How does search work?
+No. Remotes are HTTPS-only. Public clones need no token; private repositories and authenticated pushes need suitable credentials. See [[Git Sync]].
 
-Search uses HMD's built-in full-text index of page titles, bodies, and tags. It is local and needs no external service. With document extraction enabled (opt-in Tika), attachment contents are indexed too. See [[Configuration Reference]].
+### Does HMD support real-time collaboration?
 
-## What does the health report do?
+No. Each save checks the revision it started from; a newer revision causes a conflict instead of being silently overwritten. This is **optimistic locking**. See [[Pages]].
 
-`/_/health-report` lists wiki-linked but missing pages, orphaned pages with no incoming links, and pages unchanged for at least 180 days. It is a hygiene report for editors, not a liveness check — use `/_/ready` for that. See [[Monitoring And Maintenance]].
+### What does the health report do?
 
-## Can anonymous users search public pages?
+`/_/health-report` lists missing wiki-link targets, pages with no incoming links and pages unchanged for at least 180 days. Use `/_/ready` to check deployment readiness. See [[Monitoring And Maintenance]].
 
-On the live wiki, search requires login even when the pages are public. A static export has its own browser-local search of the exported pages; it does not call the live wiki's `/_/search` route.
+### What are the fixed limits?
 
-## What are the fixed limits?
+Some limits are intentionally not configurable, including the 2 MiB ordinary form request and 10,000-file namespace export ceiling. See [[Configuration Reference]].
 
-Several limits are intentionally not configurable, from the 2 MiB ordinary form request to the 10,000-file namespace export ceiling. The full table is in [[Configuration Reference]].
+### How do I upgrade?
 
-## Can I export a namespace?
-
-Yes. Export a namespace from its settings page to generate a static version of its documentation that needs no running HMD to serve. See [[Static Export]].
-
-## Do I need a database?
-
-No. HMD's state is a Git repository plus JSON files under `HMD_APP_DIR`. There is no separate database to install, back up, or tune.
-
-## How do I upgrade?
-
-Stop cleanly, replace the binary or image while stopped, and run the readiness, login, page, attachment, and sync checks afterwards. See [[Upgrade HMD]].
+Stop cleanly, replace the binary or image and check readiness, login, pages, attachments and sync afterwards. See [[Upgrade HMD]].

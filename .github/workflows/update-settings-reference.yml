@@ -1,0 +1,115 @@
+name: Update settings reference
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/_render-static-docs.yml"
+      - ".github/workflows/update-settings-reference.yml"
+      - "scripts/**"
+  pull_request:
+    paths:
+      - ".github/workflows/_render-static-docs.yml"
+      - ".github/workflows/update-settings-reference.yml"
+      - "scripts/**"
+  schedule:
+    - cron: "23 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: settings-reference-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.generate.outputs.changed }}
+      tag: ${{ steps.version.outputs.tag }}
+      source: ${{ steps.source.outputs.commit }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Read pinned HMD release
+        id: version
+        run: |
+          tag="$(python3 scripts/hmd-version.py)"
+          printf 'tag=%s\n' "$tag" >> "$GITHUB_OUTPUT"
+      - name: Record documentation revision
+        id: source
+        run: printf 'commit=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: soollabs/holdmydocs
+          ref: ${{ steps.version.outputs.tag }}
+          path: .schema-source
+          persist-credentials: false
+      - name: Generate tables
+        id: generate
+        run: |
+          python3 -m unittest discover -s scripts -p 'test_*.py'
+          if [ ! -f .schema-source/internal/config/schema/config.schema.json ]; then
+            echo "The pinned release has no settings schemas; skipping generation."
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 scripts/generate-settings.py --schema-dir .schema-source/internal/config/schema
+          git diff --check
+          paths=(holdmydocs/reference/configuration.md holdmydocs/reference/wiki-configuration.md holdmydocs/reference/namespace-configuration.md holdmydocs/admin/settings.md)
+          if git diff --quiet -- "${paths[@]}"; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+          else
+            git diff --binary -- "${paths[@]}" > settings-reference.patch
+            git diff --stat -- "${paths[@]}" >> "$GITHUB_STEP_SUMMARY"
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: steps.generate.outputs.changed == 'true'
+        with:
+          name: settings-reference-patch
+          path: settings-reference.patch
+          if-no-files-found: error
+
+  propose:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && needs.generate.outputs.changed == 'true'
+    needs: generate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.generate.outputs.source }}
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: settings-reference-patch
+          path: .generated-patch
+      - name: Open or update reference pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.generate.outputs.tag }}
+        run: |
+          git apply .generated-patch/settings-reference.patch
+          git diff --check
+          branch=automation/settings-reference
+          git switch -c "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- holdmydocs/reference/configuration.md holdmydocs/reference/wiki-configuration.md holdmydocs/reference/namespace-configuration.md holdmydocs/admin/settings.md
+          git commit -m 'docs: update pinned settings reference'
+          gh auth setup-git
+          expected="$(git ls-remote origin "refs/heads/$branch" | cut -f1)"
+          git push --force-with-lease="refs/heads/$branch:$expected" origin "$branch"
+          number="$(gh pr list --head "$branch" --base main --state open --json number --jq '.[0].number // empty')"
+          body="Generated from the renderer's pinned HMD release ${RELEASE_TAG}. Review the tables and migration guidance before merging."
+          if [ -n "$number" ]; then
+            gh pr edit "$number" --body "$body"
+          else
+            gh pr create --base main --head "$branch" --title 'docs: update pinned settings reference' --body "$body"
+          fi

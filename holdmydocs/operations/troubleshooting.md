@@ -11,7 +11,7 @@ Start with the process logs and `GET /_/ready`. Keep the request ID from a brows
 | --- | --- | --- |
 | HMD will not start | Read the named config error. | Correct the key or path. YAML rejects unknown keys. |
 | `unsafe data directory` | Inspect owner and mode of app and repository paths. | Restore or recreate them as private directories owned by the service user. |
-| Login redirects or CSRF 403 | Compare the public URL, `base_url`, Origin, and proxy TLS headers. | Set the canonical origin and a narrow `trusted_proxies` CIDR. |
+| Login redirects or CSRF 403 | Compare the public URL, `server.base_url`, Origin, and proxy TLS headers. | Set the canonical origin and narrow `server.trusted_proxies` CIDRs. |
 | OIDC login fails | Check issuer reachability, callback URL, admission rules, and provider logs. | Correct provider or HMD configuration, then restart. |
 | Pages save locally but do not reach Git | Check sync state and remote credentials. | Preserve local commits, repair remote access, and push from the host if needed. |
 | Bidirectional sync fails | Inspect Git history for divergence. | Resolve it outside HMD, then fast-forward the checkout. |

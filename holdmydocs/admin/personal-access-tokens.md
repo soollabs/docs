@@ -5,11 +5,13 @@ tags: hmd, administration, security
 
 Personal access tokens (PATs) let scripts, agents, and MCP clients authenticate as you without your password or a browser session.
 
-Create and revoke tokens from `/_/settings` under the **access tokens** tab.
+Create and revoke tokens in the **access tokens** section at `/_/settings/access-tokens`.
 
 ## Create a token
 
-1. Open `/_/settings` and open the **access tokens** tab.
+![Token creation form with expiry, scopes and namespace restrictions](/_/attachments/holdmydocs/admin/personal-access-tokens/create.png)
+
+1. Open `/_/settings/access-tokens`.
 2. Name the token after the client that will use it, for example `claude-code`.
 3. Choose an expiry: 1 day, 7 days, 30 days (the default), 1 year, or never.
 4. Select at least one scope: `read`, `write`, or `settings`.
@@ -24,7 +26,7 @@ The token value appears once, directly above the form. Copy it now: HMD stores o
 
 - `read` — view pages and search.
 - `write` — anything that writes to the store: saving, renaming, tagging, and uploading.
-- `settings` — administrative access to `/_/settings`, `/_/admin`, and `/_/namespaces`. A token with `settings` is unrestricted: namespace restrictions do not apply, and the token list labels it `Administrator`.
+- `settings` — administrative access to the personal, system and namespace sections of `/_/settings`. OAuth browser sections still require a browser session. A token with `settings` is unrestricted: namespace restrictions do not apply, and the token list labels it `Administrator`.
 
 A token's scopes can never exceed its owner's. HMD rejects a token for a scope the owner does not have, and filters effective scopes again on every request. If you reduce a user's scopes, its existing tokens are limited on the next request without being re-created.
 
@@ -40,8 +42,9 @@ curl -H "Authorization: Bearer hmd_..." https://wiki.example.com/_/api/health
 
 ## Revoke a token
 
-Tokens are revoked by name from the same **access tokens** tab: click **revoke** next to the token. The name is the revocation key and must be unique per user, so HMD cannot revoke the wrong token. Revoke any token whose secret may have been exposed or whose client is retired; the change applies immediately.
+Tokens are revoked by name from the same **access tokens** section: click **revoke** next to the token. The name is the revocation key and must be unique per user, so HMD cannot revoke the wrong token. Revoke any token whose secret may have been exposed or whose client is retired; the change applies immediately.
 
+![A fictional read-only token with its Revoke action; no token value is shown](/_/attachments/holdmydocs/admin/personal-access-tokens/tokens.png)
 
 ## Common pitfalls
 

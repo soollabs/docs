@@ -13,7 +13,7 @@ Authentication works in three layers:
 
 - **None** — reachable without credentials (probes, login, static assets, one-use upload URLs).
 - **Anonymous page** — a plain page view or attachment is served unauthenticated when the namespace is public, and is byte-identical to a 404 when it is not. Every other request needs a login session or a Bearer personal access token (PAT).
-- **Session or PAT** — a session cookie or `Authorization: Bearer` token. Scope requirements: `read` for GET/HEAD, `write` for POST/DELETE, and `settings` for administrator and namespace-management operations (not personal settings). On an API or MCP route an auth failure is HTTP 401 with a JSON body — never a login redirect. A PAT restricted to namespaces can only reach paths that resolve to those namespaces.
+- **Session or PAT** — a session cookie or `Authorization: Bearer` token. Scope requirements: `read` for GET/HEAD, `write` for POST/DELETE, and `settings` for settings and namespace-management operations, including personal settings. Connected applications is a browser-session-only exception. On an API or MCP route an auth failure is HTTP 401 with a JSON body — never a login redirect. A PAT restricted to namespaces can only reach paths that resolve to those namespaces.
 
 OAuth access tokens are another credential for `/_/mcp` only. Refresh tokens are not bearer credentials. OAuth browser consent and connection-management routes require a browser session, not a PAT or OAuth access token; protocol token/revocation endpoints use registered-client authentication instead.
 
@@ -69,16 +69,27 @@ Registered clients use their declared method: `none`, `client_secret_basic` or `
 
 ## Settings, admin and namespaces
 
-The personal settings page and its token and appearance actions require an account, not administrator access. Admin and namespace management require the `settings` scope. The UI is described on [[Settings And Administration]].
+Personal settings, their token and appearance actions, and namespace management require the `settings` scope. Connected applications requires a browser session without administrative access; OAuth client administration requires a settings-capable browser session. See [[Settings And Administration]].
 
 | Route | Method | Purpose |
 | --- | --- | --- |
-| `/_/settings` | GET | Personal settings (appearance, git author, tokens). |
-| `/_/admin` | GET | Instance configuration and users. |
-| `/_/namespaces` | GET | Namespace list. |
-| `/_/namespaces/new` | GET | New namespace form. |
-| `/_/namespaces/{name}/edit` | GET | Edit one namespace's `.namespace.yaml`. |
+| `/_/settings` | GET | Personal settings, opening on Appearance. |
+| `/_/settings/{section}` | GET | Personal sections: `appearance`, `git-author`, `access-tokens`. System sections: `server`, `git`, `mcp`, `oidc`, `document-search`, `wiki`, `users`, `advanced` (environment overrides). The former `git-remote`, `behaviour` and `advanced-config` routes return 404. |
+| `/_/settings/namespaces` | GET | Namespace list. |
+| `/_/settings/namespaces/new` | GET | New namespace form. |
+| `/_/settings/namespaces/{name}/edit` | GET | Namespace General page: name, description, index, tree and quick-create. |
+| `/_/settings/namespaces/{name}/edit/published` | GET | Published visibility and appearance. |
+| `/_/settings/namespaces/{name}/edit/static-site` | GET | Static-site settings and preview. |
+| `/_/settings/namespaces/{name}/edit/widgets` | GET | Namespace widget composition. |
 | `/_/settings/namespaces/{name}/export` | GET | Export the namespace as a static site. |
+| `/_/settings/namespaces/{name}/preview` | GET | Create a protected static-site preview. |
+| `/_/settings/connections` | GET | Connected applications for the signed-in user. |
+| `/_/settings/connections/{id}/revoke` | POST | Disconnect one application. |
+| `/_/settings/oauth-clients` | GET | MCP OAuth client administration. |
+| `/_/settings/oauth-clients` | POST | Register a client; show its secret once when applicable. |
+| `/_/settings/oauth-clients/{id}/disable` | POST | Disable a client and revoke its connections. |
+| `/_/settings/oauth-clients/{id}/delete` | POST | Delete a disabled client. |
+| `/_/settings/oauth-clients/delete-disabled` | POST | Delete all disabled clients. |
 | `/_/api/settings/server` | POST | Save instance configuration. |
 | `/_/api/settings/appearance` | POST | Save skin, palette and fonts. |
 | `/_/api/settings/export` | POST | Bake current values into `config.yaml`. |
@@ -87,8 +98,7 @@ The personal settings page and its token and appearance actions require an accou
 | `/_/api/settings/tokens/revoke` | POST | Revoke a token. |
 | `/_/api/namespaces` | POST | Save a namespace configuration. |
 | `/_/api/namespaces/reset` | POST | Restore a namespace's default configuration. |
-| `/_/api/namespaces/delete` | POST | Delete a namespace. |
-| `/_/api/namespaces/delete-all` | POST | Delete every namespace. |
+| `/_/api/namespaces/delete` | POST | Delete a namespace and every file beneath it, including non-empty namespaces. The UI asks for confirmation when files exist. The former `/delete-all` endpoint is removed. |
 | `/_/api/settings/users` | POST | Create a user. |
 | `/_/api/settings/users/scopes` | POST | Change a user's scopes. |
 | `/_/api/settings/setup` | POST | Re-run the setup dialog. |

@@ -10,15 +10,16 @@ HMD provides OAuth authentication for MCP clients. OAuth is disabled by default.
 Set the canonical public origin and enable MCP and OAuth:
 
 ```yaml
-base_url: https://wiki.example.com
+server:
+  base_url: https://wiki.example.com
 mcp:
   enabled: true
-oauth:
-  enabled: true
-  allow_admin_delegation: false
+  oauth:
+    enabled: true
+    allow_admin_delegation: false
 ```
 
-Restart HMD after changing configuration. Production deployments require HTTPS. For local development only, `oauth.allow_insecure_loopback: true` allows an HTTP loopback origin; it does not allow a public HTTP issuer. `base_url` is the OAuth issuer, so configure it to the exact origin clients use. Spoofed `Host` and forwarded headers do not change it.
+Restart HMD after changing configuration. Production deployments require HTTPS. For local development only, `mcp.oauth.allow_insecure_loopback: true` allows an HTTP loopback origin; it does not allow a public HTTP issuer. `server.base_url` is the OAuth issuer, so configure it to the exact origin clients use. Spoofed `Host` and forwarded headers do not change it.
 
 OAuth metadata is published at `/.well-known/oauth-authorization-server` and `/.well-known/oauth-protected-resource/_/mcp`. Clients should discover these endpoints. HMD supports the authorisation-code grant with S256 PKCE and the MCP resource indicator. Send the exact MCP resource URI (`<base_url>/_/mcp`) in the authorisation and code-exchange requests. A refresh request may omit the resource to inherit its grant, but a different resource is rejected. Client ID Metadata Documents (CIMD) are not supported.
 
@@ -81,7 +82,7 @@ When a client starts authorisation, the user signs in with the local password fo
 
 - `read` permits MCP read operations.
 - `write` permits page and attachment writes.
-- `settings` grants administrative access. It is disabled by default; enabling `oauth.allow_admin_delegation` permits it for eligible users and registered clients. **Settings access is unrestricted across all current and future namespaces** and cannot be narrowed by namespace selection.
+- `settings` grants administrative access. It is disabled by default; enabling `mcp.oauth.allow_admin_delegation` permits it for eligible users and registered clients. **Settings access is unrestricted across all current and future namespaces** and cannot be narrowed by namespace selection.
 
 Granted scopes cannot exceed either the client's allowed scopes or the user's current HMD permissions. Those permissions are checked again when an OAuth token is used and when it is refreshed. `write` does not imply `read`; request `read write` for a client that needs both. `settings` implies both actions and bypasses namespace restrictions. A non-administrative grant may be limited to selected namespaces, or the user may explicitly approve all namespaces. See [[MCP Tool Reference]] for the tool-to-scope mapping.
 

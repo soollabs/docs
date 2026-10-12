@@ -19,7 +19,7 @@ app/search.bleve*     Rebuildable search index and manifest
 app/models/           Rebuildable downloaded embedding model
 ```
 
-Keep `app` on local disk. HMD updates account and session state with in-process locking and atomic rename writes, and the repository needs real Git filesystem semantics; the bundled Compose file documents the same requirement for the app directory. Both directories must be private and owned by the HMD service account. The repository can be backed by NFS only if its Git filesystem semantics are known until the remote has accepted it.
+Keep `app` on local disk. HMD updates account and session state with in-process locking and atomic rename writes, and the repository needs real Git filesystem semantics; the bundled Compose file documents the same requirement for the app directory. Both directories must be private and owned by the HMD service account. Use NFS for the repository only after verifying that it supports Git's locking and atomic file operations. Keep local commits backed up even when a remote is configured: they are not mirrored until the remote accepts the push.
 
 ## Backup
 
@@ -31,7 +31,7 @@ Keep `app` on local disk. HMD updates account and session state with in-process 
 ## Restore drill
 
 1. Restore `repo` and `app` to new directories owned by the service account, both mode `0700`. Restore secret files with mode `0600`.
-2. Start the same HMD version with `HMD_REPO_DIR` and `HMD_APP_DIR` pointing at those directories.
+2. Start the same HMD version with `HMD_SERVER_REPO_DIR` and `HMD_APP_DIR` pointing at those directories.
 3. Check `/_/ready`, sign in with a known local account, open a recent page, and run `git -C repo fsck --full` and `git -C repo log -1`.
 4. Check the sync state before allowing writes. Rebuildable index and model data may be absent; HMD recreates them.
 5. If restoring OAuth state from an older snapshot, assume credentials revoked or rotated since that snapshot may be active again. Before exposing the instance, stop HMD and disable affected restored client registrations with `hmd -oauth-client-disable -oauth-client-id "CLIENT_ID"`. Provision replacement clients and require fresh user consent. A backup cannot preserve revocations made after it was taken.

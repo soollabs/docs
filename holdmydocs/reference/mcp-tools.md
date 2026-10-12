@@ -7,7 +7,7 @@ This page lists tools on the MCP endpoint (`POST /_/mcp`) and the scope each one
 
 ## Tools and scopes
 
-The current application exposes fifteen tools. Fourteen are always present; `search_attachments` appears only when document search is enabled (`HMD_TIKA_URL` plus a model).
+The current application exposes fifteen tools. Fourteen are always present; `search_attachments` appears only when document search is enabled (`HMD_DOCUMENT_SEARCH_TIKA_URL` plus a model).
 
 | Tool | Scope | What it does |
 | --- | --- | --- |

@@ -32,6 +32,7 @@ The sync state is one of `ok`, `pending`, `failed`, or `no remote`. `no remote` 
 
 `/_/health-report` is an authenticated wiki hygiene report, not a liveness check. It lists wiki-linked but missing pages, orphaned pages (no incoming links), and pages whose latest Git revision is at least 180 days old. Review its results before deleting pages.
 
+![Health report for a fictional walking-group wiki](/_/attachments/holdmydocs/operations/monitoring/health.png)
 
 ## Alerting
 

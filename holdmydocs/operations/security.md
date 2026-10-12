@@ -9,7 +9,7 @@ HMD is a trusted-editor wiki. It protects the service boundary; it does not sani
 
 ## Trust boundaries
 
-Internet browsers reach HMD through a TLS reverse proxy. The proxy is trusted only when its source address matches `trusted_proxies`; only then does HMD use `X-Forwarded-Proto`. HMD trusts the configured OIDC provider to verify identity, the configured Git remote to retain pushed history, Tika to parse documents in a separate sandbox, and the model host to provide the configured embedding model. The filesystem holding HMD state and the Git worktree is trusted local storage.
+Internet browsers reach HMD through a TLS reverse proxy. The proxy is trusted only when its source address matches `server.trusted_proxies`; only then does HMD use `X-Forwarded-Proto`. HMD trusts the configured OIDC provider to verify identity, the configured Git remote to retain pushed history, Tika to parse documents in a separate sandbox, and the model host to provide the configured embedding model. The filesystem holding HMD state and the Git worktree is trusted local storage.
 
 Public namespaces expose normal page views and their attachments without login. Authenticated users can access only their scopes. Bearer PATs can have narrower scopes and namespace allowlists. Administrative access can manage users, configuration, and namespace settings. MCP is an authenticated API surface and should not be internet-exposed without the same care as the browser service.
 

@@ -5,7 +5,7 @@ tags: hmd, writing
 
 Organise pages into top-level namespaces, each with its own visibility, navigation and appearance.
 
-Every page belongs to exactly one namespace: the first path segment of its slug. In `docs/guides/install.md`, `docs` is the namespace and `guides` is filing only. Namespaces are never nested; a directory inside a namespace is just an organising folder.
+Every page belongs to exactly one namespace: the first path segment of its slug. In the page address `docs/guides/install`, `docs` is the namespace and `guides` is filing only; the file on disk is `docs/guides/install.md`. Namespaces are never nested; a directory inside a namespace is just an organising folder.
 
 ## How a namespace is configured
 
@@ -33,11 +33,13 @@ Every field is optional. A namespace with no `.namespace.yaml` gets the built-in
 
 ## Manage namespaces
 
-1. Open `/_/namespaces`.
+1. Open `/_/settings/namespaces`.
 
-2. Review the table: name, page count and visibility for every namespace.
+2. Review the rows: name, page count and visibility for every namespace. Click a name to open its index.
 
-3. Choose **Edit** to change a namespace's configuration through the form, or **Export static site** to download a static export of it.
+3. Choose **Edit** to open General (name, description, index, tree order and quick-create). Use Published, Static site and Widgets in the nested navigation for the other settings. Preview and export actions are on the list; the Static site page also offers preview.
+
+The General page has one **Delete namespace** action. If files exist, the UI asks for confirmation; deletion removes the namespace and every file beneath it, including pages and hidden templates. **Reset namespace settings** removes only `.namespace.yaml`, keeping content.
 
 You can also write `.namespace.yaml` directly into the repository; the running instance picks it up on its next sync. See [[Namespace Configuration Reference]] for the full field reference.
 
