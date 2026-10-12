@@ -47,6 +47,14 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
 
 5. Upload the unpacked directory to an ordinary static file server or CDN.
 
+## Preview without downloading
+
+Save the Static site settings, then choose **Preview** to open a snapshot in a new tab. The preview uses current pages and saved settings; generate another preview after making changes.
+
+Only its creator can access the preview, and they must retain `settings` access to the namespace. Previews expire after 15 minutes. A new preview for the same namespace replaces your previous one. An instance allows four active previews; if it is full, wait for one to expire.
+
+Previewing does not publish the site or save settings. Sitemap entries use the publishing URL. Non-image attachments download instead of opening in the preview.
+
 ## What the export contains
 
 Static site settings control `sitemap.xml`, bot allowances in `robots.txt` and external links. The sitemap is enabled by default; bot access is blocked by default. Bot rules are voluntary, not access controls, and only apply at a domain root: merge them into the host's root `robots.txt` when publishing under a path prefix.
@@ -67,6 +75,22 @@ The export includes browser-local search of exported page titles and text. Click
 Hidden pages are not exported. Editing, authentication, page history, backlinks, and health reports require a running HMD instance and are not part of the static site. The exported pages also include code-copy buttons and render Mermaid diagrams when JavaScript is enabled. Reading pages and following ordinary links do not require JavaScript.
 
 This documentation site is generated from HMD itself: its source is the `holdmydocs` namespace, and HMD exports that namespace for static hosting.
+
+## Command-line export
+
+The CLI uses the configured content repository and inherits the namespace's export settings. Flags override those settings for this export without changing `.namespace.yaml`:
+
+```sh
+hmd -export-namespace holdmydocs -export-dir ./site \
+  -export-base-url https://docs.example.org/manual/ \
+  -export-sitemap=true \
+  -export-robots-allow Googlebot,bingbot \
+  -export-links '[{"label":"GitHub","url":"https://github.com/soollabs/holdmydocs","icon":"fa-brands fa-github","location":"topbar","icon_only":true}]'
+```
+
+Use `-export-sitemap=false` to disable the sitemap, `-export-robots-allow ''` to clear permitted bots, or `-export-links '[]'` to clear external links.
+
+The publishing URL is required even when sitemap generation is disabled. CLI export fails before creating output if neither namespace settings nor flags provide one; it does not prompt or fall back to the main HMD URL. Use `-export-use-main-base-url` to explicitly choose `server.base_url`; it cannot be combined with `-export-base-url`.
 
 ## Publication checklist
 

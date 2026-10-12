@@ -83,6 +83,7 @@ Personal settings, their token and appearance actions, and namespace management 
 | `/_/settings/namespaces/{name}/edit/widgets` | GET | Namespace widget composition. |
 | `/_/settings/namespaces/{name}/export` | GET | Export the namespace as a static site. |
 | `/_/settings/namespaces/{name}/preview` | GET | Create a protected static-site preview. |
+| `/_/export-preview/{id}/{path...}` | GET/HEAD | Serve a snapshot to its creator with current `settings` access to the namespace. Previews expire after 15 minutes. |
 | `/_/settings/connections` | GET | Connected applications for the signed-in user. |
 | `/_/settings/connections/{id}/revoke` | POST | Disconnect one application. |
 | `/_/settings/oauth-clients` | GET | MCP OAuth client administration. |

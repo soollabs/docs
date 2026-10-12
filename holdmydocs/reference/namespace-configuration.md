@@ -17,6 +17,16 @@ widgets: [pages, tags, backlinks]
 new:
   template: entry
   slug: '{{.Now.Format "2006-01-02"}}'
+export:
+  base_url: https://docs.example.org/
+  sitemap: true
+  robots_allow: [Googlebot, bingbot]
+  links:
+    - label: GitHub
+      url: https://github.com/soollabs/holdmydocs
+      icon: fa-brands fa-github
+      location: topbar
+      icon_only: true
 ```
 
 All keys are optional. `widgets` replaces the default composition rather than adding to it. `public` covers the entire namespace. `index` names the page served at the namespace root and is always first in the tree. `tree` is an optional ordered list of page or folder paths; unlisted siblings follow in alphabetical order. The same tree order is used in the live sidebar and static exports. `new` defines the hidden template and slug pattern used by quick-create.
@@ -41,3 +51,9 @@ All keys are optional. `widgets` replaces the default composition rather than ad
 | `export.links` | — | array; not specified | maximum items: `32` | — | External links in the static site's sidebar or top bar. Labels are link text, or tooltips for icon-only links; icons use Font Awesome classes such as fa-brands fa-github. |
 
 <!-- /generated:namespace -->
+
+`export` controls the static site independently of the live server. `export.base_url` must be an HTTP(S) publishing URL and can include a path prefix.
+
+External links default to `location: sidebar`. All sidebar links must share the same `icon_only` value: `false` for text links or `true` for an icon row. `location: topbar` places links before Search docs and always uses icons. Each link requires a label and an HTTP(S) URL. Icons require Font Awesome classes such as `fa-brands fa-github`; labels provide tooltips and accessible names.
+
+See [[Static Export]] for preview access, bundled icons, reserved page paths and command-line overrides.
