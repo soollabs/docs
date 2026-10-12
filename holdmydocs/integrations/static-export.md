@@ -8,17 +8,18 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
 ## Prerequisites
 
 - A namespace that already has pages. The export action only appears for namespaces with at least one page.
+- A publishing URL in **Edit → Static site → export base URL**, such as `https://docs.example.org/`. Save it before previewing or exporting. When it is missing, the browser asks before using the main HMD URL for that download or preview; this does not save the fallback.
 - A namespace `index` setting pointing to an existing page, if you want that page to be the site homepage. Without this setting, the homepage asks readers to select a page from the sidebar. See [[Namespace Configuration Reference]].
-- An export base URL identifying the published static site, including any path prefix. This is independent of the main HMD `base_url`.
 
 > Treat the archive as publishable content, not an access-controlled backup. The static host does not inherit HMD accounts or namespace permissions. Review every page and attachment before making the archive public.
 
 ## Export a namespace
 
-1. Open **Namespaces** from the settings menu. Each namespace lists an **Export static site** action.
+1. Open **Namespaces** from the settings menu. The rows show name, page count, visibility and Edit / Preview / Export actions; the name opens the namespace index.
 
+   ![Namespace list with preview and export actions](/_/attachments/holdmydocs/integrations/static-export/namespaces.png)
 
-2. Set the publishing URL and options in **Namespaces → Edit → static export**, then save. Click **Export static site** to download `{namespace}-export.zip`. If no publishing URL is set, HMD asks whether to use its main URL for this export.
+2. Click **Export static site** next to the namespace. Use **Edit → Static site** to change export settings or preview them. Your browser downloads `{namespace}-export.zip`.
 3. Unpack the archive. It contains an `index.html`, one folder per page, the namespace's attachments, and the shared styles and scripts:
 
    ```text
@@ -38,22 +39,31 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
 
 4. Serve the unpacked directory over HTTP and open its `index.html` in a browser. Check the layout, links, sidebar and embedded images before publishing. Opening a local `file://` URL may block scripts or search.
 
+   ![A static preview of the fictional walking-group wiki](/_/attachments/holdmydocs/integrations/static-export/preview.png)
+
+   The namespace's **Static site** settings page controls the publishing URL, sitemap, bot rules and external links:
+
+   ![Namespace Static site settings](/_/attachments/holdmydocs/integrations/static-export/settings.png)
 
 5. Upload the unpacked directory to an ordinary static file server or CDN.
 
 ## Preview without downloading
 
-Save your settings, then choose **Preview static site** to open the export in a new tab without downloading a ZIP. The preview uses current pages and saved settings. Changes require a new preview.
+Save the Static site settings, then choose **Preview** to open a snapshot in a new tab. The preview uses current pages and saved settings; generate another preview after making changes.
 
-Only you can access your preview, and you must retain settings access. Previews expire after 15 minutes; generating another for the same namespace replaces the previous one. The instance allows four active previews at a time. If it is full, wait for one to expire.
+Only its creator can access the preview, and they must retain `settings` access to the namespace. Previews expire after 15 minutes. A new preview for the same namespace replaces your previous one. An instance allows four active previews; if it is full, wait for one to expire.
 
-Previewing does not publish the site or change its settings. Sitemap entries still use the publishing URL. Non-image attachments download rather than open in the preview. Download the ZIP when you are ready to host the site.
+Previewing does not publish the site or save settings. Sitemap entries use the publishing URL. Non-image attachments download instead of opening in the preview.
 
 ## What the export contains
 
-Each page becomes `slug/index.html`, so every page gets its own folder and a stable location. The configured namespace index is also rendered at the root as `index.html`. The export uses the namespace's skin, palette, and ordered page tree, with a read-only page layout rather than the live application's controls.
+Static site settings control `sitemap.xml`, bot allowances in `robots.txt` and external links. The sitemap is enabled by default; bot access is blocked by default. Bot rules are voluntary, not access controls, and only apply at a domain root: merge them into the host's root `robots.txt` when publishing under a path prefix.
 
-The first page segment cannot be `robots.txt` or `sitemap.xml`, including case variants, because these names are reserved for root crawler files. This also applies to descendants such as `robots.txt/guide`, even when sitemap generation is disabled. Rename the first segment before exporting; HMD rejects these collisions before writing output. Nested names such as `guide/robots.txt` are allowed.
+Sidebar links use one shared Text or Icons mode. Links placed **Before search** require an icon and are icon-only; their label remains the accessible name and tooltip. Selected Font Awesome 6.7.2 SVG icons are downloaded during generation and bundled with attribution, so viewing the result does not need an icon CDN. Generation needs network access only when icons are selected and fails if an icon cannot be retrieved safely.
+
+HMD reserves `robots.txt` and `sitemap.xml` as first page path segments, regardless of letter case or sitemap settings. This includes descendants such as `robots.txt/guide`. HMD rejects these paths before writing the export; nested names such as `guides/robots.txt` are allowed. Turning off the sitemap removes an existing sitemap from reused output. Other stale files remain, so publish from a clean directory.
+
+Each page becomes `slug/index.html`, so every page gets its own folder and a stable location. The configured namespace index is also rendered at the root as `index.html`. The export uses the namespace's skin, palette, and ordered page tree, with a read-only page layout rather than the live application's controls.
 
 - **Wiki-links within the namespace** become ordinary relative links. Missing targets and targets outside the exported namespace become plain text.
 - **Navigation and bundled assets** use relative paths, so the site can be served at a domain root, under a prefix such as `/hmd/`, or opened locally.
@@ -64,49 +74,23 @@ The export includes browser-local search of exported page titles and text. Click
 
 Hidden pages are not exported. Editing, authentication, page history, backlinks, and health reports require a running HMD instance and are not part of the static site. The exported pages also include code-copy buttons and render Mermaid diagrams when JavaScript is enabled. Reading pages and following ordinary links do not require JavaScript.
 
-This documentation site is generated from HMD itself: its source is the `holdmydocs` namespace in the shared Soollabs Docs repository.
+This documentation site is generated from HMD itself: its source is the `holdmydocs` namespace, and HMD exports that namespace for static hosting.
 
-## Export settings and command line
+## Command-line export
 
-Store export settings in the namespace's `.namespace.yaml`, or edit them in **Namespaces → Edit → static export**:
-
-```yaml
-export:
-  base_url: https://docs.example.org/manual/
-  sitemap: true
-  robots_allow: [Googlebot, bingbot, CustomBot]
-  links:
-    - label: GitHub
-      url: https://github.com/soollabs/holdmydocs
-      icon: fa-brands fa-github
-      location: topbar
-      icon_only: true
-```
-
-`sitemap.xml` is generated by default, with absolute URLs for exported pages only. The configured index page is listed at the site root rather than duplicated. Set `sitemap: false` to disable generation. When reusing a CLI output directory, this removes an existing `sitemap.xml` and omits its reference from `robots.txt`; a removal failure fails the export. The export URL remains required even when sitemap generation is disabled. Other stale files are not removed, so use a clean directory for publication.
-
-`robots.txt` is always generated and defaults to `User-agent: *` with `Disallow: /`. Select Google, Bing, DuckDuckGo or Apple search bots in the UI, or add custom bot names, to generate specific `Allow: /` groups while other bots remain blocked. An empty `robots_allow` list blocks all bots. These directives are voluntary crawler preferences, not access controls, and not all crawlers respect them. Crawlers only read `/robots.txt` at the domain root: for a subpath export, merge the rules into the host's root file rather than relying on the exported subpath file.
-
-Each external link needs a label and an HTTP(S) URL. Labels appear as text, or as tooltips and accessible names for icons. Links open in a new tab or window.
-
-- **Sidebar:** choose **Text** for centred links, one per line, or **Icons** for a centred row that wraps. All sidebar links share this mode. In YAML or CLI JSON, use the same `icon_only` value for every sidebar link.
-- **Before search:** set `location: topbar`. These links are always icon-only.
-
-Icons use free Font Awesome classes such as `fa-brands fa-github` or `fa-solid fa-heart`. Both classes are required. During export or preview generation, HMD downloads the selected SVGs from Font Awesome 6.7.2 and saves them under `export-icons/`, with a local stylesheet and licence notices. Readers need no CDN access. Generation requires access to `raw.githubusercontent.com` and fails if an icon is unavailable; text-only links require no icon downloads.
-
-The CLI inherits namespace settings unless a corresponding flag is explicitly supplied:
+The CLI uses the configured content repository and inherits the namespace's export settings. Flags override those settings for this export without changing `.namespace.yaml`:
 
 ```sh
-hmd -export-namespace docs -export-dir ./site \
+hmd -export-namespace holdmydocs -export-dir ./site \
   -export-base-url https://docs.example.org/manual/ \
   -export-sitemap=true \
   -export-robots-allow Googlebot,bingbot \
   -export-links '[{"label":"GitHub","url":"https://github.com/soollabs/holdmydocs","icon":"fa-brands fa-github","location":"topbar","icon_only":true}]'
 ```
 
-Use `-export-sitemap=false` to disable the sitemap, `-export-robots-allow ''` to clear permitted bots, or `-export-links '[]'` to clear configured links. These overrides do not modify namespace settings. Use `-export-use-main-base-url` to explicitly choose the main HMD URL instead of the namespace export URL; it cannot be combined with `-export-base-url`.
+Use `-export-sitemap=false` to disable the sitemap, `-export-robots-allow ''` to clear permitted bots, or `-export-links '[]'` to clear external links.
 
-CLI export fails before creating output if neither namespace settings nor flags provide an export base URL. It does not prompt or silently fall back to the main URL. Existing automated exports must supply `export.base_url` or an explicit URL flag when upgrading.
+The publishing URL is required even when sitemap generation is disabled. CLI export fails before creating output if neither namespace settings nor flags provide one; it does not prompt or fall back to the main HMD URL. Use `-export-use-main-base-url` to explicitly choose `server.base_url`; it cannot be combined with `-export-base-url`.
 
 ## Publication checklist
 

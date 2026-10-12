@@ -36,8 +36,7 @@ Create tokens in **Settings** (see [[Personal Access Tokens]]). A logged-in sess
 | `/_/api/pages/revert/{slug...}` | POST | write | Restore an earlier revision. |
 | `/_/api/namespaces` | POST | settings | Save a namespace configuration. |
 | `/_/api/namespaces/reset` | POST | settings | Restore namespace defaults. |
-| `/_/api/namespaces/delete` | POST | settings | Delete a namespace. |
-| `/_/api/namespaces/delete-all` | POST | settings | Delete all namespaces. |
+| `/_/api/namespaces/delete` | POST | settings | Delete a namespace and every file beneath it. |
 | `/_/api/settings/*` | POST | varies | Save settings, users and tokens (see [[Route Reference]]). |
 | `/_/api/setup` | POST | settings | Complete first-run setup. |
 | `/_/api/preview/{slug...}` | GET | read | Page title, snippet, tags and age. |
@@ -69,7 +68,7 @@ Snippets are HTML-escaped text containing `<mark>` tags around matches, so rende
 
 ## Attachment search
 
-`GET /_/api/search/attachments?q=QUERY` searches the extracted text of attachments. The route is registered only when document search is enabled (`HMD_TIKA_URL` plus a model); on an instance without it the path returns 404. Each hit carries the owning page, filename, URL, an escaped excerpt, and a relevance score:
+`GET /_/api/search/attachments?q=QUERY` searches the extracted text of attachments. The route is registered only when document search is enabled (`HMD_DOCUMENT_SEARCH_TIKA_URL` plus a model); on an instance without it the path returns 404. Each hit carries the owning page, filename, URL, an escaped excerpt, and a relevance score:
 
 ```json
 [

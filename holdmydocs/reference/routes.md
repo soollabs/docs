@@ -7,13 +7,15 @@ This page maps HMD's routes, grouped by area, with the HTTP method and authentic
 
 ## Conventions
 
-Content owns the root. Application routes are reserved under `/_/` — the one top-level segment a namespace may never take. Unknown `/_/` paths never become content pages.
+Content owns the root. Application routes are reserved under `/_/` — the one top-level segment a namespace may never take. Unknown `/_/` paths never become content pages. OAuth discovery documents additionally use the reserved `/.well-known/` paths listed below when OAuth is enabled.
 
 Authentication works in three layers:
 
 - **None** — reachable without credentials (probes, login, static assets, one-use upload URLs).
 - **Anonymous page** — a plain page view or attachment is served unauthenticated when the namespace is public, and is byte-identical to a 404 when it is not. Every other request needs a login session or a Bearer personal access token (PAT).
-- **Session or PAT** — a session cookie or `Authorization: Bearer` token. Scope requirements: `read` for GET/HEAD, `write` for POST/DELETE, and `settings` for administrator and namespace-management operations (not personal settings). On an API or MCP route an auth failure is HTTP 401 with a JSON body — never a login redirect. A PAT restricted to namespaces can only reach paths that resolve to those namespaces.
+- **Session or PAT** — a session cookie or `Authorization: Bearer` token. Scope requirements: `read` for GET/HEAD, `write` for POST/DELETE, and `settings` for settings and namespace-management operations, including personal settings. Connected applications is a browser-session-only exception. On an API or MCP route an auth failure is HTTP 401 with a JSON body — never a login redirect. A PAT restricted to namespaces can only reach paths that resolve to those namespaces.
+
+OAuth access tokens are another credential for `/_/mcp` only. Refresh tokens are not bearer credentials. OAuth browser consent and connection-management routes require a browser session, not a PAT or OAuth access token; protocol token/revocation endpoints use registered-client authentication instead.
 
 ## Probes and root
 
@@ -41,20 +43,54 @@ Authentication works in three layers:
 | `GET /_/auth/oidc/callback` | None | OIDC redirect target. |
 | `GET /_/auth/oidc/icon` | None | Provider icon (cached from the provider). |
 
+## MCP OAuth
+
+These routes are registered only when OAuth is enabled. Browser POSTs require the live session, exact Origin and CSRF token; approving or disconnecting a grant does not require the `write` or `settings` action.
+
+| Route | Auth | Purpose |
+| --- | --- | --- |
+| `GET/HEAD /.well-known/oauth-authorization-server` | None | Authorisation-server metadata. |
+| `GET/HEAD /.well-known/oauth-protected-resource/_/mcp` | None | MCP protected-resource metadata. |
+| `GET/HEAD /.well-known/oauth-protected-resource` | None | Root alias of the same resource document. |
+| `GET /_/oauth/authorize` | Browser session or login continuation | Validate the request and show consent, or continue through login. Once the client's redirect URI is exactly validated, authorisation errors redirect back to the client with `error`, `error_description`, `state` and `iss`; unvalidated client or callback values render an error page and never redirect. |
+| `POST /_/oauth/authorize` | Browser session and CSRF | Approve or deny a bound pending request. |
+| `POST /_/oauth/token` | Registered client | Exchange an authorisation code with S256 PKCE or rotate a refresh token; browser cookies provide no authority. |
+| `POST /_/oauth/revoke` | Registered client | Revoke the client's own grant using an access or refresh token. |
+| `POST /_/oauth/register` | None; DCR must be enabled | Register an MCP client using bounded RFC 7591 JSON metadata. Registration grants no document access. |
+| `GET /_/admin/oauth` | Administrator browser session | List MCP OAuth clients and display the registration form. |
+| `POST /_/admin/oauth` | Administrator browser session and CSRF | Register an MCP client and show its secret once. |
+| `POST /_/admin/oauth/{id}/disable` | Administrator browser session and CSRF | Permanently disable a client and revoke its grants and tokens. |
+| `POST /_/admin/oauth/{id}/delete` | Administrator browser session and CSRF | Delete a disabled client and its associated security records. Active clients are rejected. |
+| `POST /_/admin/oauth/delete-disabled` | Administrator browser session and CSRF | Delete all disabled clients and their associated security records; active clients remain. |
+| `GET /_/connections` | Browser session | List the current user's connections. |
+| `POST /_/connections/{id}/revoke` | Owning browser session and CSRF | Disconnect the user's grant. |
+
+Registered clients use their declared method: `none`, `client_secret_basic` or `client_secret_post`. Public clients still supply their registered client ID; possession of that ID is not proof of identity. See [[MCP OAuth]].
+
 ## Settings, admin and namespaces
 
-The personal settings page and its token and appearance actions require an account, not administrator access. Admin and namespace management require the `settings` scope. The UI is described on [[Settings And Administration]].
+Personal settings, their token and appearance actions, and namespace management require the `settings` scope. Connected applications requires a browser session without administrative access; OAuth client administration requires a settings-capable browser session. See [[Settings And Administration]].
 
 | Route | Method | Purpose |
 | --- | --- | --- |
-| `/_/settings` | GET | Personal settings (appearance, git author, tokens). |
-| `/_/admin` | GET | Instance configuration and users. |
-| `/_/namespaces` | GET | Namespace list. |
-| `/_/namespaces/new` | GET | New namespace form. |
-| `/_/namespaces/{name}/edit` | GET | Edit one namespace's `.namespace.yaml`. |
+| `/_/settings` | GET | Personal settings, opening on Appearance. |
+| `/_/settings/{section}` | GET | Personal sections: `appearance`, `git-author`, `access-tokens`. System sections: `server`, `git`, `mcp`, `oidc`, `document-search`, `wiki`, `users`, `advanced` (environment overrides). The former `git-remote`, `behaviour` and `advanced-config` routes return 404. |
+| `/_/settings/namespaces` | GET | Namespace list. |
+| `/_/settings/namespaces/new` | GET | New namespace form. |
+| `/_/settings/namespaces/{name}/edit` | GET | Namespace General page: name, description, index, tree and quick-create. |
+| `/_/settings/namespaces/{name}/edit/published` | GET | Published visibility and appearance. |
+| `/_/settings/namespaces/{name}/edit/static-site` | GET | Static-site settings and preview. |
+| `/_/settings/namespaces/{name}/edit/widgets` | GET | Namespace widget composition. |
 | `/_/settings/namespaces/{name}/export` | GET | Export the namespace as a static site. |
-| `/_/settings/namespaces/{name}/preview` | GET | Generate a private static-site snapshot and redirect to its temporary preview. |
-| `/_/export-preview/{id}/{path...}` | GET/HEAD | Serve preview pages and assets to the snapshot's creator with current `settings` access; snapshots expire after 15 minutes. |
+| `/_/settings/namespaces/{name}/preview` | GET | Create a protected static-site preview. |
+| `/_/export-preview/{id}/{path...}` | GET/HEAD | Serve a snapshot to its creator with current `settings` access to the namespace. Previews expire after 15 minutes. |
+| `/_/settings/connections` | GET | Connected applications for the signed-in user. |
+| `/_/settings/connections/{id}/revoke` | POST | Disconnect one application. |
+| `/_/settings/oauth-clients` | GET | MCP OAuth client administration. |
+| `/_/settings/oauth-clients` | POST | Register a client; show its secret once when applicable. |
+| `/_/settings/oauth-clients/{id}/disable` | POST | Disable a client and revoke its connections. |
+| `/_/settings/oauth-clients/{id}/delete` | POST | Delete a disabled client. |
+| `/_/settings/oauth-clients/delete-disabled` | POST | Delete all disabled clients. |
 | `/_/api/settings/server` | POST | Save instance configuration. |
 | `/_/api/settings/appearance` | POST | Save skin, palette and fonts. |
 | `/_/api/settings/export` | POST | Bake current values into `config.yaml`. |
@@ -63,8 +99,7 @@ The personal settings page and its token and appearance actions require an accou
 | `/_/api/settings/tokens/revoke` | POST | Revoke a token. |
 | `/_/api/namespaces` | POST | Save a namespace configuration. |
 | `/_/api/namespaces/reset` | POST | Restore a namespace's default configuration. |
-| `/_/api/namespaces/delete` | POST | Delete a namespace. |
-| `/_/api/namespaces/delete-all` | POST | Delete every namespace. |
+| `/_/api/namespaces/delete` | POST | Delete a namespace and every file beneath it, including non-empty namespaces. The UI asks for confirmation when files exist. The former `/delete-all` endpoint is removed. |
 | `/_/api/settings/users` | POST | Create a user. |
 | `/_/api/settings/users/scopes` | POST | Change a user's scopes. |
 | `/_/api/settings/setup` | POST | Re-run the setup dialog. |
@@ -99,7 +134,7 @@ There is no hidden-page POST route.
 | --- | --- | --- |
 | `POST /_/mcp` | Any authenticated | MCP JSON-RPC calls; each tool enforces its own scope and namespace rules. |
 
-MCP is stateless: it does not support GET streams or DELETE session teardown. Clients must send the required `MCP-Protocol-Version: 2026-07-28` header and protocol metadata. See [[MCP Integration]].
+MCP is stateless: it does not support GET streams or DELETE session teardown. Modern `2026-07-28` requests require the matching version header and per-request protocol/client/capability metadata, and use `server/discover`. Legacy Streamable HTTP clients can negotiate `2025-03-26`, `2025-06-18` or `2025-11-25` through `initialize` without the modern header/metadata requirement. Subsequent legacy requests use the negotiated header, with the specification's absent-header fallback. See [[MCP Integration]].
 
 The tool list and scope map are on [[MCP Tool Reference]].
 

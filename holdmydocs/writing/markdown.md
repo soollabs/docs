@@ -5,7 +5,7 @@ tags: hmd, writing
 
 Write Markdown in the split-pane editor with live preview, toolbar formatting and keyboard shortcuts.
 
-The editor shows the Markdown source on the left and a live preview on the right. Use `#` for the page title, then start sections at `##`. The preview scrolls in step with the editor, and the status line shows the word count.
+The editor shows the Markdown source on the left and a live preview on the right. Set the title in the title field; HMD renders it above the body. Start body sections at `##`. The preview scrolls with the editor. The status line below it shows the word count.
 
 ## Markdown basics
 
@@ -40,6 +40,7 @@ See [[Links And Navigation]] for page links and [[Attachments]] for uploaded ima
 
 The toolbar row above the editor covers the common actions:
 
+![Formatting toolbar and live preview](/_/attachments/holdmydocs/writing/markdown/toolbar.png)
 
 | Control | What it does |
 | --- | --- |

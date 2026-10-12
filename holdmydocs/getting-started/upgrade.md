@@ -9,7 +9,7 @@ When building from source, use the Go version required by the target release's `
 
 1. Read the release notes and pin the target image digest or binary checksum.
 2. Back up `repo`, `app`, and external secret files. Confirm the Git remote has the current local commit.
-3. Stop HMD cleanly. For Compose, pull the pinned image or rebuild the pinned source revision, then run `docker compose up -d`; for a binary, replace it atomically while stopped. `docker compose pull` alone does not update a service configured with `build: .`.
+3. Stop HMD cleanly. For the longer-running Compose installation in [[Install HMD]], pull the pinned image or rebuild the pinned source revision, then run `docker compose -f compose.local.yaml up -d`; for a binary, replace it atomically while stopped. Use the same Compose file for every command. `docker compose -f compose.local.yaml pull` alone does not update a service configured with `build: .`.
 4. Start HMD with the same data paths and service account. Do not change old root-owned volume ownership; restore into fresh UID/GID 65532-owned volumes.
 5. Check logs, `/_/ready`, local login, OIDC login, a page save, attachment download, sync status, and static export before declaring the upgrade done.
 
@@ -17,9 +17,6 @@ If the new version fails before writing data, stop it and redeploy the previous 
 
 After a rollback, run the same readiness, login, page, attachment, and sync checks.
 
-## Common pitfalls
-
-- Never change volume ownership in place. Old root-owned volumes must be restored into fresh UID/GID `65532`-owned volumes, not `chown`ed.
-- Never use `git reset --hard` against the live repository as a rollback method; it discards commits.
+Compare your configuration with [[Configuration Reference]] before restarting. HMD does not migrate configuration files or environment variables automatically. Supply secrets through their environment variables or secret files, not in `config.yaml`.
 
 See [[Storage And Recovery]] and [[Troubleshooting]].
