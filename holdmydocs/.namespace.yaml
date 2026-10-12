@@ -11,6 +11,14 @@ description: Learn to write, organise, and publish a Git-backed wiki with Hold M
 skin: soft
 palette: nord
 index: index
+export:
+  base_url: https://hmd.sool.dev/
+  links:
+  - label: GitHub
+    url: https://github.com/soollabs/holdmydocs
+    icon: fa-brands fa-github
+    location: topbar
+    icon_only: true
 tree:
 - getting-started
 - getting-started/install

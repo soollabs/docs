@@ -17,10 +17,13 @@ Upload files and images to a page, and control how they are stored, served and s
 
    You should now see the markdown link in the editor and, for an image, the rendered image in the preview:
 
+   ![An image link and its walking-route preview in the editor](/_/attachments/holdmydocs/writing/attachments/upload.png)
 
 4. Save the page.
 
 ## Where attachments live
+
+A page slug is its address without a leading slash or `.md`, such as `notes/inbox`; see [[HMD Concepts]].
 
 HMD stores the file at `attachments/<page-slug>/<file>` in the content repository and serves it at `/_/attachments/<page-slug>/<file>`. Uploading is itself a commit, so attachments share the page's Git history.
 
@@ -34,7 +37,9 @@ Only PNG, JPEG, GIF and WebP render inline. Every other type is sent with a down
 
 Plain UTF-8 `.txt` and `.md` uploads always get cached text extraction, so their content is readable through MCP and by attachment search.
 
-For other document formats (PDF, Word, spreadsheets and similar), set `HMD_TIKA_URL` to an Apache Tika endpoint. With Tika configured, HMD extracts text from those formats and indexes it for keyword and semantic search. Without it, non-text attachments remain ordinary Git-backed files with no indexed content.
+A sidecar is a separate file that caches an attachment's extracted text. HMD creates it when you upload the document.
+
+For other document formats (PDF, Word, spreadsheets and similar), set `document_search.tika_url` to a private Apache Tika endpoint on the Document search settings page or override it with `HMD_DOCUMENT_SEARCH_TIKA_URL`, then restart. With Tika configured, HMD extracts text from those formats and indexes it for keyword and semantic search. Without it, non-text attachments remain ordinary Git-backed files with no indexed content.
 
 ## Access control
 

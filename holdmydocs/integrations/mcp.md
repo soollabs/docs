@@ -12,20 +12,20 @@ Connect a compatible MCP client to read and write your wiki over the Model Conte
 
 ## Enable the MCP endpoint
 
-1. Set `HMD_MCP_ENABLED=true` and set `HMD_BASE_URL` to HMD's public origin, then restart HMD. The endpoint is served at `POST /_/mcp`:
+1. Set `HMD_MCP_ENABLED=true` and `HMD_SERVER_BASE_URL` to HMD's public origin, then restart HMD. The endpoint is served at `POST /_/mcp`:
 
    ```sh
    HMD_MCP_ENABLED=true
-   HMD_BASE_URL=https://wiki.example.com
+   HMD_SERVER_BASE_URL=https://wiki.example.com
    ```
 
-   `HMD_BASE_URL` is required whenever MCP is on. It must be a bare origin (scheme and host, no path), because HMD uses it to build the upload capability URLs it returns to the agent.
+   `HMD_SERVER_BASE_URL` is required whenever MCP is on. It must be a bare origin (scheme and host, no path), because HMD uses it to build upload URLs.
 
 2. Create a personal access token in **Settings** with the scopes for the agent. MCP uses the same token store as the API.
 
 3. Point the agent at the endpoint URL with the token as a Bearer credential:
 
-   ```sh
+   ```http
    POST https://wiki.example.com/_/mcp
    Authorization: Bearer hmd_your_token
    MCP-Protocol-Version: 2026-07-28
@@ -75,7 +75,7 @@ When document search is enabled, HMD keeps a hidden, Git-tracked extracted text 
 
 ## Common pitfalls
 
-- **The agent gets 401 after you create a token.** `HMD_BASE_URL` must match the origin the agent actually uses to reach you, and the token must include the scope the tools you call require.
+- **The agent gets 401 after you create a token.** `HMD_SERVER_BASE_URL` must match the origin the agent uses, and the token must include the scope the tools require.
 - **Writes keep failing with a conflict.** You saved with a stale `basehash`. Re-read the page and retry; HMD never overwrites silently.
 - **Hidden pages do not appear.** Draft pages, hidden templates, and `.wiki.yaml` are never visible to MCP tools.
 

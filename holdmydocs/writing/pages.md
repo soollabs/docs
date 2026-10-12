@@ -9,6 +9,8 @@ Create, edit and version pages in the split-pane editor, and recover older versi
 
 You need a signed-in account with write access to the namespace. For a worked example with content to copy, follow [[Your First Wiki]].
 
+A slug is a page's address without the leading slash or `.md`, such as `notes/inbox`; see [[HMD Concepts]]. A quick-create template is a hidden starter page copied into new pages when you use the namespace's quick-create shortcut.
+
 1. Click **New** in the top bar.
 
    The editor opens for a new page in the current namespace. The path field is pre-filled with a slug such as `homelab/new`; change it to the page slug you want. With a namespace that declares a quick-create template, `ctrl-j` (`cmd-j` on macOS) and the command palette's `>new` verb open the editor pre-filled from that template instead.
@@ -35,12 +37,12 @@ title: Servers
 tags: homelab, hardware
 ---
 
-# Servers
+## Hardware
 
 ...
 ```
 
-The title and tags fields in the editor write this frontmatter for you. A `pin: true` frontmatter line is also honoured by the pinned widget. Every save is a Git commit, so the repository history is the page history.
+The title and tags fields in the editor write this frontmatter for you. HMD renders the title above the body, so do not repeat it as a `#` heading. A `pin: true` frontmatter line is also honoured by the pinned widget. Every save is a Git commit, so the repository history is the page history.
 
 ## Read pages in order
 
@@ -60,8 +62,9 @@ Revert writes the old content as a new commit (`Revert <slug> to <short hash>`).
 
 If someone else saves the page after you open it, HMD asks you to resolve the conflict rather than silently overwriting their work. This is called **optimistic locking**: your editor remembers which revision you started from.
 
+![The editor preserves a draft after detecting a newer revision](/_/attachments/holdmydocs/writing/pages/conflict.png)
 
-The screen shows the other writer's revision (**theirs**) and your unsaved draft (**yours**). Open **view newer version** to compare, or **overwrite with mine** to replace the newer content with your draft. Every save is a commit, so either choice is recoverable from history.
+The conflict notice preserves your unsaved draft and offers **overwrite with mine** to replace the newer content. Review the current page in another tab before overwriting. Every save is a commit, so previous saved versions remain recoverable from history.
 
 ## Common pitfalls
 

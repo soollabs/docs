@@ -34,7 +34,7 @@ An explicit light or dark choice is remembered in this browser's local storage. 
 
 - Choosing a skin resets the palette to the skin's pairing. If you then pick a different palette, that choice is remembered (`palette_explicit`) and the skin stops overriding it.
 - Skins and palettes are per user. A namespace's `skin` and `palette` keys in `.namespace.yaml` set what anonymous and public viewers of that namespace see; signed-in users keep their own choices. See [[Namespace Configuration Reference]].
-- The install-wide default skin comes from `config.yaml` (`skin` / `HMD_SKIN`); see [[Configuration Reference]].
+- The install-wide default skin comes from `config.yaml` (`server.skin` / `HMD_SERVER_SKIN`); see [[Configuration Reference]].
 
 ## Common pitfalls
 

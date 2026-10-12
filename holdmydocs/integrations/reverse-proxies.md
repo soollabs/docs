@@ -11,29 +11,30 @@ Put HMD behind a TLS-terminating reverse proxy that preserves the public origin 
 - Two HMD settings, both in the config file or their environment-variable equivalents:
 
   ```yaml
-  base_url: https://wiki.example.com
-  trusted_proxies: ["10.0.0.0/8"]
+  server:
+    base_url: https://wiki.example.com
+    trusted_proxies: ["10.0.0.0/8"]
   ```
 
 ## Configure HMD
 
-1. Set `base_url` to HMD's canonical public origin, for example `https://wiki.example.com`. It must be a bare origin: scheme and host, with no path, query, or fragment. `base_url` is the exact browser **Origin** HMD accepts for cookie-authenticated writes, the origin it uses for MCP attachment-upload capability URLs, and the origin it registers for the OIDC callback. It is required when MCP or OIDC is enabled.
-2. Set `trusted_proxies` to the CIDRs of the peers HMD should trust for forwarding headers. This is typically the reverse proxy's own address or the network it runs on. List only peers you control, never a broad public block:
+1. Set `server.base_url` to HMD's canonical public origin, for example `https://wiki.example.com`. It must be a bare origin: scheme and host, with no path, query, or fragment. It is the exact browser **Origin** HMD accepts for cookie-authenticated writes, the origin used for MCP upload URLs and the OIDC callback. It is required when MCP or OIDC is enabled.
+2. Set `server.trusted_proxies` to the CIDRs of the peers HMD should trust for forwarding headers. This is typically the reverse proxy's own address or the network it runs on. List only peers you control, never a broad public block:
 
    ```yaml
-   # In front of HMD directly.
-   trusted_proxies: ["10.0.0.0/8"]
-   # Behind a CDN you control as the outer hop.
-   trusted_proxies: ["10.0.0.0/8", "203.0.113.0/24"]
+   server:
+     trusted_proxies: ["10.0.0.0/8"]
    ```
+
+   If a CDN you control is the outer hop, add its documented address ranges to this list.
 
 3. Restart HMD.
 
 ## Configure the proxy
 
-Terminate TLS at the proxy and send `X-Forwarded-Proto: https` to the backend. This is the header HMD uses to detect that the request arrived over TLS. HMD ignores it from every peer not listed in `trusted_proxies`; if the header is missing or ignored, HMD treats the connection as plain HTTP, writes session cookies without `Secure`, and does not send `Strict-Transport-Security`.
+Terminate TLS at the proxy and send `X-Forwarded-Proto: https` to the backend. HMD ignores it from every peer not listed in `server.trusted_proxies`; if the header is missing or ignored, HMD treats the connection as plain HTTP, writes session cookies without `Secure`, and does not send `Strict-Transport-Security`.
 
-Preserve the browser's public **Host** and **Origin** headers. HMD writes the session cookie host-only (no `Domain` attribute) with `SameSite=Lax`, and it rejects cookie-authenticated writes whose `Origin` does not equal `base_url`. A proxy that rewrites either header breaks login, saving, or uploads.
+Preserve the browser's public **Host** and **Origin** headers. HMD writes the session cookie host-only (no `Domain` attribute) with `SameSite=Lax`, and rejects cookie-authenticated writes whose `Origin` does not equal `server.base_url`. A proxy that rewrites either header breaks login, saving or uploads.
 
 Register `<base_url>/_/auth/oidc/callback` with your identity provider as the redirect URI, and make sure the proxy routes that path to the backend.
 
@@ -47,11 +48,11 @@ wiki.example.com {
 }
 ```
 
-Add Caddy's peer address to `trusted_proxies`.
+Add Caddy's peer address to `server.trusted_proxies`.
 
 ### Nginx Proxy Manager (NPM)
 
-Create a proxy host for `wiki.example.com`, set the forward hostname to `127.0.0.1` (or the machine running HMD), and the forward port to `8080`. NPM's default proxy config already sends `Host` and sets `X-Forwarded-Proto` to the incoming scheme, so TLS terminated at NPM reaches HMD as `https`. Add NPM's peer address to `trusted_proxies`.
+Create a proxy host for `wiki.example.com`, set the forward hostname to `127.0.0.1` (or the machine running HMD), and the forward port to `8080`. NPM's default proxy config sends `Host` and sets `X-Forwarded-Proto` to the incoming scheme, so TLS terminated at NPM reaches HMD as `https`. Add NPM's peer address to `server.trusted_proxies`.
 
 ### Traefik
 
@@ -66,7 +67,7 @@ entryPoints:
       insecure: false
 ```
 
-Point a router at the HMD backend with this entry point, and list that same network in HMD's `trusted_proxies`.
+Point a router at the HMD backend with this entry point, and list that same network in HMD's `server.trusted_proxies`.
 
 ## Test
 
@@ -74,9 +75,9 @@ Test login, save, upload, and MCP access **through the proxy** after changing it
 
 ## Common pitfalls
 
-- **Logins work but saves fail.** The browser's `Origin` does not match `base_url`, or the proxy rewrote the Host. Verify both match the public origin exactly.
-- **HSTS never appears.** HMD did not receive an accepted `X-Forwarded-Proto: https` — the proxy peer is not in `trusted_proxies`.
-- **No path-prefix deployments.** HMD serves from the origin root. A `base_url` with a path is rejected at configuration load, and every route is mounted at the origin root, so a proxy prefix such as `https://example.com/hmd/` needs different reply handling.
+- **Logins work but saves fail.** The browser's `Origin` does not match `server.base_url`, or the proxy rewrote the Host. Verify both match the public origin exactly.
+- **HSTS never appears.** HMD did not receive an accepted `X-Forwarded-Proto: https` — the proxy peer is not in `server.trusted_proxies`.
+- **No path-prefix deployments.** HMD serves from the origin root. A `server.base_url` with a path is rejected at configuration load, and every route is mounted at the origin root. Use a dedicated host such as `https://wiki.example.com`, not a proxy prefix such as `https://example.com/hmd/`.
 
 ## Next steps
 

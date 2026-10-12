@@ -8,16 +8,18 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
 ## Prerequisites
 
 - A namespace that already has pages. The export action only appears for namespaces with at least one page.
+- A publishing URL in **Edit → Static site → export base URL**, such as `https://docs.example.org/`. Save it before previewing or exporting. When it is missing, the browser asks before using the main HMD URL for that download or preview; this does not save the fallback.
 - A namespace `index` setting pointing to an existing page, if you want that page to be the site homepage. Without this setting, the homepage asks readers to select a page from the sidebar. See [[Namespace Configuration Reference]].
 
 > Treat the archive as publishable content, not an access-controlled backup. The static host does not inherit HMD accounts or namespace permissions. Review every page and attachment before making the archive public.
 
 ## Export a namespace
 
-1. Open **Namespaces** from the settings menu. Each namespace lists an **Export static site** action.
+1. Open **Namespaces** from the settings menu. The rows show name, page count, visibility and Edit / Preview / Export actions; the name opens the namespace index.
 
+   ![Namespace list with preview and export actions](/_/attachments/holdmydocs/integrations/static-export/namespaces.png)
 
-2. Click **Export static site** next to the namespace. Your browser downloads `{namespace}-export.zip`.
+2. Click **Export static site** next to the namespace. Use **Edit → Static site** to change export settings or preview them. Your browser downloads `{namespace}-export.zip`.
 3. Unpack the archive. It contains an `index.html`, one folder per page, the namespace's attachments, and the shared styles and scripts:
 
    ```text
@@ -37,10 +39,21 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
 
 4. Serve the unpacked directory over HTTP and open its `index.html` in a browser. Check the layout, links, sidebar and embedded images before publishing. Opening a local `file://` URL may block scripts or search.
 
+   ![A static preview of the fictional walking-group wiki](/_/attachments/holdmydocs/integrations/static-export/preview.png)
+
+   The namespace's **Static site** settings page controls the publishing URL, sitemap, bot rules and external links:
+
+   ![Namespace Static site settings](/_/attachments/holdmydocs/integrations/static-export/settings.png)
 
 5. Upload the unpacked directory to an ordinary static file server or CDN.
 
 ## What the export contains
+
+Static site settings control `sitemap.xml`, bot allowances in `robots.txt` and external links. The sitemap is enabled by default; bot access is blocked by default. Bot rules are voluntary, not access controls, and only apply at a domain root: merge them into the host's root `robots.txt` when publishing under a path prefix.
+
+Sidebar links use one shared Text or Icons mode. Links placed **Before search** require an icon and are icon-only; their label remains the accessible name and tooltip. Selected Font Awesome 6.7.2 SVG icons are downloaded during generation and bundled with attribution, so viewing the result does not need an icon CDN. Generation needs network access only when icons are selected and fails if an icon cannot be retrieved safely.
+
+HMD reserves `robots.txt` and `sitemap.xml` as first page path segments, regardless of letter case or sitemap settings. This includes descendants such as `robots.txt/guide`. HMD rejects these paths before writing the export; nested names such as `guides/robots.txt` are allowed. Turning off the sitemap removes an existing sitemap from reused output. Other stale files remain, so publish from a clean directory.
 
 Each page becomes `slug/index.html`, so every page gets its own folder and a stable location. The configured namespace index is also rendered at the root as `index.html`. The export uses the namespace's skin, palette, and ordered page tree, with a read-only page layout rather than the live application's controls.
 
@@ -53,7 +66,7 @@ The export includes browser-local search of exported page titles and text. Click
 
 Hidden pages are not exported. Editing, authentication, page history, backlinks, and health reports require a running HMD instance and are not part of the static site. The exported pages also include code-copy buttons and render Mermaid diagrams when JavaScript is enabled. Reading pages and following ordinary links do not require JavaScript.
 
-This documentation site is generated from HMD itself: its source is the `hmd` namespace, and HMD exports that namespace for static hosting.
+This documentation site is generated from HMD itself: its source is the `holdmydocs` namespace, and HMD exports that namespace for static hosting.
 
 ## Publication checklist
 

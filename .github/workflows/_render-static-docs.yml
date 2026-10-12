@@ -15,7 +15,7 @@ on:
         description: HoldMyDocs renderer tag, branch, or commit
         required: false
         # renovate: datasource=github-tags depName=soollabs/holdmydocs versioning=semver
-        default: v0.1.0
+        default: v0.3.0
         type: string
 
 permissions:
@@ -44,10 +44,10 @@ jobs:
         env:
           EXPORT_DIR: ${{ github.workspace }}/public
           HMD_APP_DIR: ${{ runner.temp }}/hmd-app
-          HMD_REPO_DIR: ${{ github.workspace }}
+          HMD_SERVER_REPO_DIR: ${{ github.workspace }}
           NAMESPACE: ${{ inputs.namespace }}
         run: |
-          chmod 700 "$HMD_REPO_DIR"
+          chmod 700 "$HMD_SERVER_REPO_DIR"
           mkdir -p "$HMD_APP_DIR" "$EXPORT_DIR"
           chmod 700 "$HMD_APP_DIR"
           (

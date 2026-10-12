@@ -21,8 +21,6 @@ This is what the editor looks like. Your page's title and content will differ:
 4. Paste this into the left editor pane:
 
    ```markdown
-   # Weekend Project
-
    Build a small website for our walking group.
 
    ## Plan
@@ -45,8 +43,6 @@ You now have a page at `/notes/weekend-project`. It appears in the namespace's p
 Click **New** again. Use the path `notes/launch-checklist`, the title `Launch Checklist`, and the tag `project`. Paste and save:
 
 ```markdown
-# Launch Checklist
-
 Before sharing the website:
 
 - [ ] Check the date and meeting point

@@ -11,6 +11,7 @@ A **namespace** is a top-level area of your wiki, such as `notes` or `team`. Sta
 
 Open your HMD address and sign in with the administrator credentials you supplied during installation. On a fresh instance, HMD opens the setup screen.
 
+![First-run setup with site name, namespace and help options](/_/attachments/holdmydocs/getting-started/first-run/setup.png)
 
 Nothing is written until you click **Add selected**.
 
@@ -30,8 +31,9 @@ Leave **Help guide** selected on a fresh installation. It adds an in-app guide t
 
 ## 3. Create the wiki
 
-Click **Add selected**. HMD creates the selected items and opens the namespace's welcome page. You should see your site name in the top bar and the welcome page in the page tree.
+Click **Add selected**. HMD creates the selected items and returns to the namespace list. Click `notes/` to open its welcome page. You should see your site name in the top bar and the welcome page in the page tree.
 
+![The private notes namespace after completing setup](/_/attachments/holdmydocs/getting-started/first-run/welcome.png)
 
 The new namespace is private by default. Creating it does not publish your content to the internet.
 
@@ -41,29 +43,11 @@ Sign out and sign in again to confirm that the wiki opens in the right place. Yo
 
 The setup screen adapts to what is missing. You may see an existing namespace selector, a **First namespace** option, or only the option to add a help guide. Selecting an existing namespace as the default does not replace its pages.
 
-An administrator can reopen setup from **Settings** at `/_/settings`. You can also skip setup and return later; skipping does not create any of the missing items.
+An administrator can reopen setup from **Settings → Wiki** at `/_/settings/wiki`. You can also skip setup and return later; skipping does not create any of the missing items.
 
 ## Browse a public repository without a GitHub token
 
-With an installed HMD binary that supports `read_only`, you can run the official documentation repository as a live local instance:
-
-```sh
-hmd_state="$(mktemp -d)"
-HMD_BIND=127.0.0.1:8080 \
-HMD_APP_DIR="$hmd_state/app" \
-HMD_REPO_DIR="$hmd_state/repo" \
-HMD_READ_ONLY=true \
-HMD_GIT_REMOTE_URL=https://github.com/soollabs/docs.git \
-hmd
-```
-
-Open `http://127.0.0.1:8080/holdmydocs/`. HMD clones the public repository without a GitHub token or bootstrap account, skips setup and lets you browse its public namespace. Keep the state directory if you want to reuse the clone; stop HMD before deleting it.
-
-Read-only mode blocks content edits, uploads, setup, administrator operations and pushes, even for administrators. It fetches and fast-forwards remote updates in the background at `sync_poll_ms` intervals (10 seconds by default), regardless of `sync_mode`. Reload the page to see updated content. Fetch failures retain the last local snapshot; divergent histories are not merged, and uncommitted local changes are never discarded to apply an update. If reusing a checkout, its `origin` must match the configured URL; use a fresh `repo_dir` for a different remote.
-
-For an existing local Git repository, set `HMD_REPO_DIR` to its private checkout and omit `HMD_GIT_REMOTE_URL`. Without a remote, HMD does not fetch or push. A blank local or remote repository needs normal writable setup first; read-only mode does not initialise it.
-
-Application state and the cloned snapshot still need private local directories; read-only mode is an application policy, not a read-only filesystem mount. Remote refreshes update the snapshot and Git metadata. Private Git repositories still need credentials, and private HMD namespaces still require an authorised HMD account: read-only mode never makes private pages public.
+To browse the official documentation locally without an account or token, follow the read-only example in [[Git Sync]].
 
 ## Where these settings are stored
 
@@ -74,6 +58,8 @@ You do not need to edit files to complete setup. For administrators managing the
 - `notes/readme.md` — the welcome page in the example namespace.
 - `readme.md` — an introduction for the Git repository's front page, not a wiki page.
 - `.help.md` — the hidden in-app help guide, if selected.
+
+Files beginning with a dot are hidden by default. Run `ls -a` in the content repository to see them, or enable **Show hidden files** in your file manager. To create one manually, use your text editor's Save As dialog and enter the full filename, including the leading dot; ensure it does not append `.txt`.
 
 The actual namespace path uses the name you chose. Wiki and namespace settings travel with the content repository. Application settings and accounts stay in the separate application-state directory. See [[Configuration]] when you need to change those settings.
 
