@@ -33,7 +33,7 @@ Every field is optional. A namespace with no `.namespace.yaml` gets the built-in
 
 ## Manage namespaces
 
-1. Open `/_/namespaces`.
+1. Open `/_/settings/namespaces`.
 
 2. Review the table: name, page count and visibility for every namespace.
 

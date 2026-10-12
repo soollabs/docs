@@ -47,12 +47,20 @@ The personal settings page and its token and appearance actions require an accou
 
 | Route | Method | Purpose |
 | --- | --- | --- |
-| `/_/settings` | GET | Personal settings (appearance, git author, tokens). |
-| `/_/admin` | GET | Instance configuration and users. |
-| `/_/namespaces` | GET | Namespace list. |
-| `/_/namespaces/new` | GET | New namespace form. |
-| `/_/namespaces/{name}/edit` | GET | Edit one namespace's `.namespace.yaml`. |
+| `/_/settings` | GET | Personal settings, opening on Appearance. |
+| `/_/settings/{section}` | GET | One settings section: `appearance`, `git-author` and `access-tokens` are personal; `server`, `git-remote`, `behaviour`, `users`, `advanced-config` and `advanced` configure the instance. |
+| `/_/settings/namespaces` | GET | Namespace list. |
+| `/_/settings/namespaces/new` | GET | New namespace form. |
+| `/_/settings/namespaces/{name}/edit` | GET | Edit one namespace's `.namespace.yaml`. |
 | `/_/settings/namespaces/{name}/export` | GET | Export the namespace as a static site. |
+| `/_/settings/namespaces/{name}/preview` | GET | Create a protected static-site preview. |
+| `/_/settings/connections` | GET | Connected applications for the signed-in user. |
+| `/_/settings/connections/{id}/revoke` | POST | Disconnect one application. |
+| `/_/settings/oauth-clients` | GET | MCP OAuth client administration. |
+| `/_/settings/oauth-clients` | POST | Register a client; show its secret once when applicable. |
+| `/_/settings/oauth-clients/{id}/disable` | POST | Disable a client and revoke its connections. |
+| `/_/settings/oauth-clients/{id}/delete` | POST | Delete a disabled client. |
+| `/_/settings/oauth-clients/delete-disabled` | POST | Delete all disabled clients. |
 | `/_/api/settings/server` | POST | Save instance configuration. |
 | `/_/api/settings/appearance` | POST | Save skin, palette and fonts. |
 | `/_/api/settings/export` | POST | Bake current values into `config.yaml`. |

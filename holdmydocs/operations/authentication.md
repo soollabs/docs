@@ -9,7 +9,7 @@ This page covers accounts, scopes, sessions, personal access tokens, login throt
 
 The first local account is created from `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD` when `users.json` does not exist. Bootstrap passwords must be 12–72 bytes, contain no control characters, and cannot be common placeholders or the user name. Remove the bootstrap variables after that first start.
 
-Users have explicit `read`, `write`, and `settings` scopes. `settings` grants administrative access. Manage users and scopes at `/_/admin`; scope or password changes revoke that user's active sessions. Sessions are server-side, expire after 30 days, and each new login replaces the user's prior session. Log out to revoke the current session immediately.
+Users have explicit `read`, `write`, and `settings` scopes. `settings` grants administrative access. Manage users and scopes at `/_/settings/users`; scope or password changes revoke that user's active sessions. Sessions are server-side, expire after 30 days, and each new login replaces the user's prior session. Log out to revoke the current session immediately.
 
 Local login throttles repeated failures by source and user, and only four bcrypt checks run at once. A login failure intentionally gives no account-specific detail.
 

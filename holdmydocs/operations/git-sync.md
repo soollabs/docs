@@ -12,7 +12,7 @@ Every save and delete creates a local Git commit. With a remote configured, HMD 
 - `push` (default) — local changes push to the remote; HMD does not pull.
 - `bidirectional` — fetches and fast-forwards before saves and on the sync poll. Divergent histories fail rather than creating merge commits.
 
-Set the mode in `config.yaml` (`sync_mode`) or at `/_/admin` under git remote, where the current sync state is shown:
+Set the mode in `config.yaml` (`sync_mode`) or at `/_/settings/git-remote`, where the current sync state is shown:
 
 
 ## Remotes

@@ -15,7 +15,7 @@ Every scalar YAML key has an environment equivalent formed as `HMD_` plus the up
 
 ## The admin UI
 
-Open `/_/admin` to configure the content repository, Git remote, upload limit, and sync mode. Saving the form writes `config.yaml` and applies the changes immediately; the UI marks the fields that need a restart:
+Open `/_/settings/server` and use the system navigation to configure the content repository, Git remote, upload limit, and sync mode. Saving the form writes `config.yaml` and applies the changes immediately; the UI marks the fields that need a restart:
 
 - **server** — bind address and repository directory. Both require a restart; the app directory is shown read-only.
 - **git remote** — remote URL, user, default author, token, and sync mode. Saving reconfigures the live repository and shows the current sync state.
