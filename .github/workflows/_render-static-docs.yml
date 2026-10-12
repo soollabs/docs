@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       renderer-ref:
-        description: HoldMyDocs renderer tag, branch, or commit
+        description: HoldMyDocs renderer release tag
         required: false
         # renovate: datasource=github-tags depName=soollabs/holdmydocs versioning=semver
         default: v0.3.0
@@ -29,16 +29,34 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          repository: soollabs/holdmydocs
-          ref: ${{ inputs.renderer-ref }}
-          path: renderer
-          persist-credentials: false
-
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
-        with:
-          go-version-file: renderer/go.mod
+      - name: Download and verify renderer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RENDERER_REF: ${{ inputs.renderer-ref }}
+          RENDERER_DIR: ${{ runner.temp }}/hmd-renderer
+          RUNNER_PLATFORM: ${{ runner.os }}/${{ runner.arch }}
+        run: |
+          [[ "$RENDERER_REF" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]]
+          mkdir -p "$RENDERER_DIR"
+          case "$RUNNER_PLATFORM" in
+            Linux/X64) platform=linux-amd64 ;;
+            Linux/ARM64) platform=linux-arm64 ;;
+            macOS/X64) platform=darwin-amd64 ;;
+            macOS/ARM64) platform=darwin-arm64 ;;
+            *) echo "Unsupported runner platform: $RUNNER_PLATFORM" >&2; exit 1 ;;
+          esac
+          asset="hmd-${RENDERER_REF}-${platform}"
+          gh release download "$RENDERER_REF" \
+            --repo soollabs/holdmydocs \
+            --pattern "$asset" \
+            --pattern SHA256SUMS \
+            --dir "$RENDERER_DIR"
+          cd "$RENDERER_DIR"
+          awk -v file="$asset" '$2 == file || $2 == "*" file {print}' SHA256SUMS > renderer.sha256
+          test "$(wc -l < renderer.sha256)" -eq 1
+          sha256sum --check renderer.sha256
+          mv "$asset" hmd
+          chmod 700 hmd
 
       - name: Render static documentation
         env:
@@ -46,16 +64,14 @@ jobs:
           HMD_APP_DIR: ${{ runner.temp }}/hmd-app
           HMD_SERVER_REPO_DIR: ${{ github.workspace }}
           NAMESPACE: ${{ inputs.namespace }}
+          RENDERER_DIR: ${{ runner.temp }}/hmd-renderer
         run: |
           chmod 700 "$HMD_SERVER_REPO_DIR"
           mkdir -p "$HMD_APP_DIR" "$EXPORT_DIR"
           chmod 700 "$HMD_APP_DIR"
-          (
-            cd renderer
-            go run ./cmd/hmd \
-              -export-namespace "$NAMESPACE" \
-              -export-dir "$EXPORT_DIR"
-          )
+          "$RENDERER_DIR/hmd" \
+            -export-namespace "$NAMESPACE" \
+            -export-dir "$EXPORT_DIR"
           test -f "$EXPORT_DIR/index.html"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
