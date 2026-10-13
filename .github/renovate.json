@@ -16,6 +16,10 @@
   "minimumReleaseAge": "1 day",
   "packageRules": [
     {
+      "matchDepNames": ["soollabs/holdmydocs"],
+      "minimumReleaseAge": "0 days"
+    },
+    {
       "matchCategories": ["js"],
       "groupName": "javascript dependencies",
       "separateMajorMinor": false
