@@ -47,7 +47,7 @@ All keys are optional. `widgets` replaces the default composition rather than ad
 | `new.slug` | — | string; not specified | — | — | Go template that names a quick-created page, such as {{.Now.Format "2006-01-02"}} for a daily journal. Enables Ctrl+J. |
 | `export.base_url` | — | string; not specified | — | — | Absolute URL where the static site will be published, including any path prefix. Used to build sitemap.xml. |
 | `export.sitemap` | — | boolean, `true` | — | — | Include sitemap.xml in the static export. |
-| `export.robots_allow` | — | array; not specified | maximum items: `64`; items: string | — | Search and AI bots allowed to crawl the static site. Every other bot is blocked in robots.txt. |
+| `export.robots_allow` | — | array; not specified | maximum items: `64`; items: string | — | Search and AI bots allowed to crawl the static site. Every other bot is blocked in robots.txt. Use a single "*" to allow every bot. |
 | `export.links` | — | array; not specified | maximum items: `32` | — | External links in the static site's sidebar or top bar. Labels are link text, or tooltips for icon-only links; icons use Font Awesome classes such as fa-brands fa-github. |
 
 <!-- /generated:namespace -->
