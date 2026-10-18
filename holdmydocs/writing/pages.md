@@ -3,31 +3,23 @@ title: Pages
 tags: hmd, writing
 ---
 
-Create, edit and version pages in the split-pane editor, and recover older versions from history.
+Create, edit and version pages in the editor, and recover older versions from history.
 
 ## Create and edit a page
 
-You need a signed-in account with write access to the namespace. For a worked example with content to copy, follow [[Your First Wiki]].
+You need a signed-in account with write access to the namespace. For a worked example, see [[Your First Wiki]].
 
-A slug is a page's address without the leading slash or `.md`, such as `notes/inbox`; see [[HMD Concepts]]. A quick-create template is a hidden starter page copied into new pages when you use the namespace's quick-create shortcut.
+1. Click **New** in the top bar. The editor opens with the path pre-filled with a slug such as `homelab/new`. If the namespace declares a quick-create template, `ctrl-j` (`cmd-j` on macOS) and the command palette's `>new` verb open the editor pre-filled from that template instead.
+2. Type the **title** and **tags** (comma-separated). Open **page details** to set the **path**, the page slug such as `homelab/servers` (see [[HMD Concepts]]). The **hidden** checkbox there excludes the page from the page list, search, tags and backlinks.
+3. Write the page. Press **preview** or `ctrl-e` (`cmd-e` on macOS) to see it rendered, and again to go back to writing.
 
-1. Click **New** in the top bar.
-
-   The editor opens for a new page in the current namespace. The path field is pre-filled with a slug such as `homelab/new`; change it to the page slug you want. With a namespace that declares a quick-create template, `ctrl-j` (`cmd-j` on macOS) and the command palette's `>new` verb open the editor pre-filled from that template instead.
-
-2. Set the **path**, **title** and **tags** in the editor's top row.
-
-   The path is the page slug, for example `homelab/servers`. The title is the display name; tags are comma-separated. The **hidden** checkbox files the page as a hidden page, excluded from the page list, search, tags and backlinks.
-
-3. Write the page in the left pane. The right pane renders a live preview as you type.
-
-   ![Split-pane editor in a fictional homelab wiki](/_/attachments/holdmydocs/writing/pages/editor.png)
+   ![Editor in a fictional home lab wiki](/_/attachments/holdmydocs/writing/pages/editor.png)
 
 4. Save with **Save** in the top bar or `ctrl-s` (`cmd-s` on macOS).
 
-   You should now see the rendered page. HMD stored one Markdown file per page and committed the save: new pages produce `Create` commits, edits produce `Update` commits, and changing the path during the same edit records a `Move`.
+Each save is a Git commit: new pages produce `Create`, edits produce `Update`, and a path change during the edit records a `Move`.
 
-## What HMD wrote
+## What HMD writes
 
 Each page is one Markdown file, `<slug>.md`, with the title and tags in frontmatter:
 
@@ -42,35 +34,33 @@ tags: homelab, hardware
 ...
 ```
 
-The title and tags fields in the editor write this frontmatter for you. HMD renders the title above the body, so do not repeat it as a `#` heading. A `pin: true` frontmatter line is also honoured by the pinned widget. Every save is a Git commit, so the repository history is the page history.
+HMD shows the title above the page, so do not repeat it as a `#` heading.
 
 ## Read pages in order
 
-Use **Previous** and **Next** at the bottom of a page to move through its namespace in page-tree order. These links work for signed-in readers, public readers, and static exports. They stay within the current namespace and only include pages you can access.
+**Previous** and **Next** at the bottom of a page move through its namespace in page-tree order. They work for signed-in readers, public readers and static exports, and only include pages you can access.
 
 ## History and revert
 
 1. Open a page and choose **history**, or visit `/<slug>?do=history`.
-
 2. Review the revisions: short hash, commit message, author and date. The current revision is marked.
+3. Select a revision and choose **revert**, or use **view** to read an old version first.
 
-3. Select a revision and choose **revert**, or use the **view** link to read an old version first.
-
-Revert writes the old content as a new commit (`Revert <slug> to <short hash>`). It never rewrites or deletes earlier commits, so anything in history stays recoverable.
+Revert writes the old content as a new commit (`Revert <slug> to <short hash>`). Earlier commits are never rewritten or deleted.
 
 ## When two people edit the same page
 
-If someone else saves the page after you open it, HMD asks you to resolve the conflict rather than silently overwriting their work. This is called **optimistic locking**: your editor remembers which revision you started from.
+If someone saves the page after you open it, HMD shows a conflict notice instead of overwriting their work.
 
 ![The editor preserves a draft after detecting a newer revision](/_/attachments/holdmydocs/writing/pages/conflict.png)
 
-The conflict notice preserves your unsaved draft and offers **overwrite with mine** to replace the newer content. Review the current page in another tab before overwriting. Every save is a commit, so previous saved versions remain recoverable from history.
+Your unsaved draft is kept. **overwrite with mine** replaces the newer content, so review the current page in another tab first. Earlier versions stay in history.
 
 ## Common pitfalls
 
 - Opening the editor does not create a page. A page exists only after a save.
-- `ctrl-j` needs a quick-create template: the namespace must declare a `new:` block in `.namespace.yaml`. Without one, use **New** in the top bar.
-- The path field, not the title, decides the slug. Two pages can share a display title, but each slug is unique.
+- `ctrl-j` needs a `new:` block in the namespace's `.namespace.yaml`. Without one, use **New**.
+- The path field, not the title, decides the slug. Titles can repeat; slugs are unique.
 
 ## Next steps
 

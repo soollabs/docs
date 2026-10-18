@@ -3,16 +3,15 @@ title: Wiki Configuration Reference
 tags: hmd, reference
 ---
 
-`.wiki.yaml` sits at the root of the content repository and travels with it:
+`.wiki.yaml` sits at the root of the content repository. Edit it at `/_/settings/wiki`.
 
 ```yaml
 site_name: My Wiki
 landing: notes/
 ```
 
-`site_name` is the application display name. `landing` may name a namespace index such as `notes/` or a page such as `notes/inbox`. When omitted, HMD falls back to the first namespace.
-
-Edit this file at `/_/settings/wiki`, not in the local instance configuration.
+- `site_name`: the display name of the application.
+- `landing`: a namespace index such as `notes/` or a page such as `notes/inbox`. Omitted, it falls back to the first namespace.
 
 <!-- generated:wiki -->
 

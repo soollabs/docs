@@ -3,15 +3,13 @@ title: Markdown And The Editor
 tags: hmd, writing
 ---
 
-Write Markdown in the split-pane editor with live preview, toolbar formatting and keyboard shortcuts.
+The editor shows Markdown source in the same column as the rendered page, with a preview, toolbar and shortcuts.
 
-The editor shows the Markdown source on the left and a live preview on the right. Set the title in the title field; HMD renders it above the body. Start body sections at `##`. The preview scrolls with the editor. The status line below it shows the word count.
+Type the title where the page title sits. Tags go under it. **Page details** holds the page path, the hidden setting and **delete page**. Start body sections at `##`. Press **preview** or `ctrl-e` (`cmd-e` on macOS) to switch between source and preview. The status line shows the word count.
 
 ## Markdown basics
 
-Markdown is plain text with a few formatting conventions. You can type these in the editor or use the toolbar; the preview shows the result before you save.
-
-| To write… | Use |
+| To write | Use |
 | --- | --- |
 | A section heading | `## Plan` |
 | A smaller heading | `### Details` |
@@ -24,7 +22,7 @@ Markdown is plain text with a few formatting conventions. You can type these in 
 | A link to another wiki page | `[[Page Title]]` |
 | A quoted note | `> A note for readers` |
 
-Leave a blank line between paragraphs. For a block of code, put three backticks on a line before and after it, with a language name after the opening backticks:
+Leave a blank line between paragraphs. For a code block, put three backticks on a line before and after it, with a language name after the opening backticks:
 
 ````markdown
 ```sh
@@ -32,46 +30,43 @@ printf 'Hello from HMD\n'
 ```
 ````
 
-On a saved page, each code block has a **Copy** button that copies the code without extra formatting. This works in the live wiki and static exports. If your browser blocks clipboard access, the button selects the code and asks you to press **Ctrl+C** (**Cmd+C** on macOS).
+Each code block on a saved page has a **Copy** button, in the live wiki and static exports. If the browser blocks clipboard access, the button selects the code and asks you to press **Ctrl+C** (**Cmd+C** on macOS).
 
 See [[Links And Navigation]] for page links and [[Attachments]] for uploaded images and files.
 
 ## Toolbar
 
-The toolbar row above the editor covers the common actions:
-
-![Formatting toolbar and live preview](/_/attachments/holdmydocs/writing/markdown/toolbar.png)
+![Formatting toolbar](/_/attachments/holdmydocs/writing/markdown/toolbar.png)
 
 | Control | What it does |
 | --- | --- |
 | **B**, **I** | Bold and italic |
 | **H** | Insert a heading |
-| `` `[[link]]` `` | Insert a link: the selected text becomes `[text](url)` Markdown link syntax |
+| **link** | Turn the selected text into a `[text](url)` link |
 | **code** | Wrap the selection in code |
 | **table** | Insert a table |
 | **img** | Insert an image placeholder |
 | **attach** | Upload an attachment |
 | **toc** | Insert a `<!-- hmd:toc -->` token |
-| **preview** | Hide the preview pane for more writing space |
-| **wrap** | Toggle word wrap |
-| **Full**, **Type**, **Focus** | Full-screen manuscript mode, typewriter scroll and focus mode |
+| **focus** | Show only the title and the writing, larger, with all but the current line dimmed |
+| **preview** | Show the rendered page in place of the source |
 
 ## Keyboard shortcuts
+
+`ctrl` works on Windows and Linux; `cmd` on macOS.
 
 | Shortcut | What it does |
 | --- | --- |
 | `ctrl-s` / `cmd-s` | Save |
 | `ctrl-k` / `cmd-k`, or `/` | Open the command palette |
-| `ctrl-e` / `cmd-e` | Edit the current page |
+| `ctrl-e` / `cmd-e` | Edit the current page; in the editor, switch between source and preview |
 | `ctrl-j` / `cmd-j` | New page from the namespace's quick-create template |
 | `ctrl-shift-k` / `cmd-shift-k` | Insert a link (`[text](url)`) |
 | `ctrl-b` / `cmd-b`, `ctrl-i` / `cmd-i` | Bold, italic |
 | `alt-1`, `alt-2`, `alt-3` | Heading levels 1 to 3 |
-| `ctrl-shift-f` | Full-screen manuscript mode |
-| `ctrl-shift-t` | Typewriter scroll |
-| `ctrl-shift-d` | Focus mode |
+| `ctrl-shift-f` | Focus mode; `esc` leaves it |
 
-`ctrl` works on Windows and Linux; `cmd` on macOS.
+In focus mode, move the mouse to show a corner bar with the word count, text size controls and **Exit**. HMD remembers the text size.
 
 ## Diagrams
 
@@ -86,8 +81,6 @@ graph LR
 ```
 ````
 
-The resulting diagram:
-
 ```mermaid
 graph LR
   Write --> Preview
@@ -95,19 +88,17 @@ graph LR
   Save --> Share
 ```
 
-In the editor, the preview updates while you write:
-
-![A Mermaid network diagram in a fictional homelab wiki](/_/attachments/holdmydocs/writing/markdown/network.png)
+![A Mermaid network diagram in a fictional home lab wiki](/_/attachments/holdmydocs/writing/markdown/network.png)
 
 ## Raw HTML
 
-Raw HTML in page bodies is rendered deliberately. A sanitizer strips scripts and event handlers, but the remaining HTML is still trusted content, so only give editing access to users you trust.
+Raw HTML in page bodies is rendered. A sanitizer strips scripts and event handlers, but the rest is trusted content, so give editing access only to users you trust.
 
 ## Common pitfalls
 
-- The editor saves drafts locally and restores them if the page changes, but a save is the only thing that writes to the repository.
-- The `` `[[link]]` `` button and `ctrl-shift-k` insert a Markdown link (`[text](url)`). For a wiki-link that HMD can track in backlinks, type `[[Title]]` by hand.
-- Unsaved changes warn on navigation away from the page.
+- Drafts are saved locally and restored if the page changes, but only a save writes to the repository.
+- The link button and `ctrl-shift-k` insert `[text](url)`. For a wiki-link that shows in backlinks, type `[[Title]]` by hand.
+- Navigating away with unsaved changes shows a warning.
 
 ## Next steps
 

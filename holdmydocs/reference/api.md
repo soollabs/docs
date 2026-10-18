@@ -3,22 +3,20 @@ title: API Reference
 tags: hmd, reference, api
 ---
 
-The `/_/api/*` endpoints let scripts, dashboards, and agents read and write the wiki, using the same scope and namespace restrictions as a login session. Most endpoints return JSON; Markdown preview returns HTML.
+The `/_/api/*` endpoints let scripts and agents read and write the wiki with the same scope and namespace restrictions as a login session. Most return JSON; Markdown preview returns HTML.
 
 ## Authentication
 
-Use a personal access token (PAT) as a Bearer credential for scripts. The one-use attachment upload URL uses its own capability token:
+Send a personal access token (PAT) as a Bearer credential. Create tokens in **Settings** (see [[Personal Access Tokens]]). A session cookie also works, but scripts should use the header.
 
 ```sh
 curl -s -H "Authorization: Bearer hmd_your_token" \
   "https://wiki.example.com/_/api/health"
 ```
 
-- A missing, malformed, or expired token returns **HTTP 401** with a JSON body, never a login redirect: `{"error":"unauthorized"}`.
-- A token without the required scope returns **HTTP 403** with `{"error":"<scope>"}`, for example `{"error":"write"}`.
-- A token restricted to particular namespaces can only reach results for those namespaces; the endpoints filter results rather than erroring.
-
-Create tokens in **Settings** (see [[Personal Access Tokens]]). A logged-in session cookie also authenticates `/_/api/*`, but the `Authorization` header is the reliable choice for scripts and agents — it is explicit and does not depend on a browser session.
+- A missing, malformed or expired token returns **401** with `{"error":"unauthorized"}`, never a login redirect.
+- A token without the required scope returns **403** with `{"error":"<scope>"}`, for example `{"error":"write"}`.
+- A token restricted to namespaces only sees results from those namespaces; endpoints filter rather than error.
 
 ## Endpoints
 
@@ -46,12 +44,7 @@ Create tokens in **Settings** (see [[Personal Access Tokens]]). A logged-in sess
 
 ## Search
 
-`GET /_/api/search?q=QUERY` searches page titles, bodies and tags. The query is the same syntax as `/_/search`, including `mark` highlighting in snippets.
-
-```sh
-curl -s -H "Authorization: Bearer hmd_your_token" \
-  "https://wiki.example.com/_/api/search?q=docker"
-```
+`GET /_/api/search?q=QUERY` searches titles, bodies and tags, using the same syntax as `/_/search`. Results are limited to pages the token can read. Snippets are HTML-escaped text with `<mark>` around matches.
 
 ```json
 [
@@ -64,11 +57,9 @@ curl -s -H "Authorization: Bearer hmd_your_token" \
 ]
 ```
 
-Snippets are HTML-escaped text containing `<mark>` tags around matches, so render them with escaping enabled. Results are limited to pages the token can read.
-
 ## Attachment search
 
-`GET /_/api/search/attachments?q=QUERY` searches the extracted text of attachments. The route is registered only when document search is enabled (`HMD_DOCUMENT_SEARCH_TIKA_URL` plus a model); on an instance without it the path returns 404. Each hit carries the owning page, filename, URL, an escaped excerpt, and a relevance score:
+`GET /_/api/search/attachments?q=QUERY` searches the extracted text of attachments. It exists only when document search is enabled (`HMD_DOCUMENT_SEARCH_TIKA_URL` plus a model); otherwise it returns 404.
 
 ```json
 [
@@ -84,12 +75,7 @@ Snippets are HTML-escaped text containing `<mark>` tags around matches, so rende
 
 ## Health
 
-`GET /_/api/health` reports dangling wiki-links, orphan pages and pages unchanged for at least 180 days. An optional `?namespace=NAME` scopes the report to one namespace.
-
-```sh
-curl -s -H "Authorization: Bearer hmd_your_token" \
-  "https://wiki.example.com/_/api/health"
-```
+`GET /_/api/health` reports dangling wiki-links, orphan pages and pages unchanged for at least 180 days. Add `?namespace=NAME` to scope it to one namespace.
 
 ```json
 {
@@ -104,11 +90,13 @@ curl -s -H "Authorization: Bearer hmd_your_token" \
 }
 ```
 
-`missing` lists wiki-link targets that do not exist, with the pages that link to them; `orphans` are pages nothing links to. `stale` entries include `slug` and `last_updated`. An empty report has all three arrays empty.
+- `missing`: link targets that do not exist, with the pages that link to them.
+- `orphans`: pages nothing links to.
+- `stale`: entries with `slug` and `last_updated`.
 
 ## Sync
 
-`GET /_/api/sync` returns the current sync state:
+`GET /_/api/sync` returns the sync state. `state` is `ok`, `pending`, `failed` or `no remote`. In bidirectional mode with a remote, the response also lists pages changed by the fetch and the fetched commits.
 
 ```json
 {
@@ -119,9 +107,7 @@ curl -s -H "Authorization: Bearer hmd_your_token" \
 }
 ```
 
-`state` is one of `ok`, `pending`, `failed`, or `no remote`. In bidirectional sync mode with a configured remote, the response also lists the pages changed by the fetch and the fetched commits.
-
-`POST /_/api/sync/push-now` triggers a push immediately instead of waiting for the next poll:
+`POST /_/api/sync/push-now` pushes immediately instead of waiting for the next poll:
 
 ```sh
 curl -s -X POST -H "Authorization: Bearer hmd_your_token" \
@@ -139,12 +125,7 @@ curl -s -X POST -H "Authorization: Bearer hmd_your_token" \
 
 ## Page preview
 
-`GET /_/api/preview/{slug...}` returns one page's title, a snippet of the first 40 words, tags, and a human-readable age:
-
-```sh
-curl -s -H "Authorization: Bearer hmd_your_token" \
-  "https://wiki.example.com/_/api/preview/homelab/readme"
-```
+`GET /_/api/preview/{slug...}` returns the title, a snippet of the first 40 words, tags and a human-readable age. A missing page returns 404 with a plain-text body.
 
 ```json
 {
@@ -155,11 +136,9 @@ curl -s -H "Authorization: Bearer hmd_your_token" \
 }
 ```
 
-A missing page returns 404 with a plain-text body.
-
 ## Markdown preview
 
-`POST /_/api/preview` renders Markdown to HTML. Raw HTML written by trusted editors is not sanitised: do not embed this response in an untrusted origin. Send the Markdown as the request body, with `?slug=namespace/page` when the body contains wiki-links so they resolve inside the right namespace:
+`POST /_/api/preview` renders the request body to HTML. Pass `?slug=namespace/page` so wiki-links resolve in the right namespace. Raw HTML from trusted editors is not sanitised, so do not embed the response in an untrusted origin.
 
 ```sh
 curl -s -X POST -H "Authorization: Bearer hmd_your_token" \
@@ -168,13 +147,9 @@ curl -s -X POST -H "Authorization: Bearer hmd_your_token" \
   "https://wiki.example.com/_/api/preview?slug=homelab"
 ```
 
-```html
-<p>See the <a class="wiki" href="/homelab/docker">…</a> page.</p>
-```
-
 ## Upload an attachment
 
-`POST /_/api/attachments/{slug...}` uploads one file as multipart form field `file` and commits it to the page's namespace:
+`POST /_/api/attachments/{slug...}` uploads one file as multipart field `file` and commits it to the page's namespace:
 
 ```sh
 curl -s -X POST -H "Authorization: Bearer hmd_your_token" \
@@ -189,18 +164,19 @@ curl -s -X POST -H "Authorization: Bearer hmd_your_token" \
 }
 ```
 
-`url` is the attachment's serve path, ready to embed as `[name](/…/report.pdf)` or `![alt](/…/report.pdf)`. `indexed` is true only when document search is enabled and the extraction succeeded. The response is 200 by default, 201 when the file was indexed, and 202 if the commit succeeded but the disposable index could not be rebuilt — the file is safe to use either way. A 201 means document search is enabled, not necessarily that extraction succeeded; check `indexed` for that.
+- `url` is the serve path, ready to embed as `[name](/…/report.pdf)` or `![alt](/…/report.pdf)`.
+- `indexed` is true only when document search is enabled and extraction succeeded.
+- Status is 200 by default, 201 when document search is enabled (check `indexed` for extraction), and 202 when the commit succeeded but the index could not be rebuilt. The file is safe to use in every case.
 
 ## One-use upload URL
 
-`POST /_/api/attachment-uploads/{token}` is the second half of the MCP `upload_attachment` tool: the tool returns a one-use `upload_url`, and this route receives the file. It needs no `Authorization` header — the token itself is the credential — and it can be used only once before expiring (10 minutes). Unknown, expired and already-used tokens return 404.
+`POST /_/api/attachment-uploads/{token}` receives the file for the MCP `upload_attachment` tool, which returns the one-use `upload_url`. It needs no `Authorization` header. The token expires after 10 minutes or first use; unknown, expired and used tokens return 404.
 
 ## Common pitfalls
 
-- **401 `{"error":"unauthorized"}`** — the token is missing, malformed, or expired. Re-check the header and create a fresh token in Settings.
-- **403 `{"error":"write"}`** — the token lacks the scope the route needs. Add the scope when creating the token.
-- **`/_/api/search/attachments` 404** — document search is not enabled on the instance; the route is not registered at all.
-- **Wiki-links render unstyled in previews** — pass `?slug=namespace/page` so they resolve in the page's namespace.
-- Cookies also work for a logged-in browser session, but scripts and agents should send the `Authorization` header — it is explicit and does not depend on a browser session.
+- **401:** the token is missing, malformed or expired. Check the header and create a fresh token in Settings.
+- **403:** the token lacks the scope the route needs. Add it when creating the token.
+- **404 on `/_/api/search/attachments`:** document search is not enabled.
+- **Unstyled wiki-links in previews:** pass `?slug=namespace/page`.
 
 Next: [[MCP Tool Reference]].

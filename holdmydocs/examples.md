@@ -3,16 +3,16 @@ title: Examples
 tags: hmd, examples
 ---
 
-See how the pieces fit together in a practical workflow.
+Three ways to use HMD, from simplest to most involved.
 
 ## A small project wiki
 
-[[Your First Wiki]] walks through an overview page and a launch checklist. It is the simplest starting point for personal notes or a project's documentation.
+[[Your First Wiki]] builds an overview page and a launch checklist. Start here for personal notes or project documentation.
 
 ## An assistant-maintained knowledge base
 
-[[LLM Wiki]] shows how to organise source material, topic pages, and research with an MCP-connected assistant. Read [[MCP Integration]] first for access and client setup.
+[[LLM Wiki]] organises source material, topic pages and research with an MCP-connected assistant. Read [[MCP Integration]] first for access and client setup.
 
 ## A public documentation site
 
-This site is an HMD namespace published as static HTML. [[Static Export]] explains how to do the same with your own namespace, including preview and publication checks.
+This site is an HMD namespace published as static HTML. See [[Static Export]] to do the same with your own namespace.

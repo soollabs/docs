@@ -3,7 +3,7 @@ title: Namespace Configuration Reference
 tags: hmd, reference
 ---
 
-Place `.namespace.yaml` in a namespace directory:
+Put `.namespace.yaml` in a namespace directory. All keys are optional.
 
 ```yaml
 title: Documentation
@@ -29,7 +29,11 @@ export:
       icon_only: true
 ```
 
-All keys are optional. `widgets` replaces the default composition rather than adding to it. `public` covers the entire namespace. `index` names the page served at the namespace root and is always first in the tree. `tree` is an optional ordered list of page or folder paths; unlisted siblings follow in alphabetical order. The same tree order is used in the live sidebar and static exports. `new` defines the hidden template and slug pattern used by quick-create.
+- `widgets` replaces the default composition instead of adding to it.
+- `public` covers the whole namespace.
+- `index` names the page served at the namespace root. It is always first in the tree.
+- `tree` lists page or folder paths in order. Unlisted siblings follow alphabetically. Live sidebar and static exports use the same order.
+- `new` sets the hidden template and slug pattern for quick-create.
 
 <!-- generated:namespace -->
 
@@ -52,8 +56,12 @@ All keys are optional. `widgets` replaces the default composition rather than ad
 
 <!-- /generated:namespace -->
 
-`export` controls the static site independently of the live server. `export.base_url` must be an HTTP(S) publishing URL and can include a path prefix.
+## Export links
 
-External links default to `location: sidebar`. All sidebar links must share the same `icon_only` value: `false` for text links or `true` for an icon row. `location: topbar` places links before Search docs and always uses icons. Each link requires a label and an HTTP(S) URL. Icons require Font Awesome classes such as `fa-brands fa-github`; labels provide tooltips and accessible names.
+- `export` controls the static site independently of the live server.
+- `export.base_url` must be an HTTP(S) URL and can include a path prefix.
+- Links default to `location: sidebar`. All sidebar links must share the same `icon_only` value: `false` for text links, `true` for an icon row.
+- `location: topbar` places links before Search docs and always uses icons.
+- Each link needs a label and an HTTP(S) URL. Icons use Font Awesome classes such as `fa-brands fa-github`. Labels become tooltips and accessible names.
 
 See [[Static Export]] for preview access, bundled icons, reserved page paths and command-line overrides.

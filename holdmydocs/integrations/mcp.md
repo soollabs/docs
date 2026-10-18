@@ -3,93 +3,72 @@ title: MCP Integration
 tags: hmd, integrations, mcp
 ---
 
-Connect a compatible MCP client to read and write your wiki over the Model Context Protocol, with the same scope and namespace restrictions as its credential.
+Connect an AI assistant such as Claude Code to your wiki over MCP, so it can search, read and edit pages. It can only reach what its token allows.
 
-MCP server metadata advertises the title `HoldMyDocs`, the description `Search, read and manage pages and attachments in HoldMyDocs.`, and the HMD icon at `<base_url>/_/static/icon.svg`. Display of this metadata depends on the MCP client.
+## 1. Turn on MCP
 
-## Prerequisites
+An administrator does this once.
 
-- An HMD instance reachable from the agent's network, with **MCP enabled**.
-- Either a personal access token or an OAuth connection with the scopes you want to grant the client. OAuth setup is documented in [[MCP OAuth]].
+1. Open **Settings → Server** and set **base URL** to the address people use for the wiki, for example `https://wiki.example.com` (no path).
+2. Open **Settings → MCP**, tick **enable MCP** and save.
+3. Restart HMD.
 
-## Enable the MCP endpoint
+The MCP address is your base URL followed by `/_/mcp`, for example `https://wiki.example.com/_/mcp`.
 
-1. Set `HMD_MCP_ENABLED=true` and `HMD_SERVER_BASE_URL` to HMD's public origin, then restart HMD. The endpoint is served at `POST /_/mcp`:
+## 2. Create a token for the assistant
 
-   ```sh
-   HMD_MCP_ENABLED=true
-   HMD_SERVER_BASE_URL=https://wiki.example.com
-   ```
+1. Open **Settings → Access tokens**.
+2. Name the token after the assistant, for example `claude-code`.
+3. Tick **read** to let it search and read, and **write** to let it edit. Tick namespaces to limit it to those; leave them all unticked for every namespace.
+4. Click **Create token** and copy the value. It is shown once.
 
-   `HMD_SERVER_BASE_URL` is required whenever MCP is on. It must be a bare origin (scheme and host, no path), because HMD uses it to build upload URLs.
+See [[Personal Access Tokens]] for expiry and revocation. To sign in through the browser instead of pasting a token, an administrator can set up [[MCP OAuth]].
 
-2. Choose a credential:
+## 3. Connect your assistant
 
-   - For a PAT, create a personal access token in **Settings** with the scopes for the client. MCP uses the same token store as the API.
-   - For OAuth, follow [[MCP OAuth]] to register a client and connect through the browser consent flow.
+Claude Code:
 
-3. Point the agent at the endpoint URL with its Bearer credential:
+```sh
+claude mcp add --transport http hmd https://wiki.example.com/_/mcp \
+  --header "Authorization: Bearer hmd_your_token"
+```
 
-   ```http
-   POST https://wiki.example.com/_/mcp
-   Authorization: Bearer ACCESS_TOKEN
-   ```
+Other clients that accept a JSON server list:
 
-   HMD supports stateless Streamable HTTP, including protocol versions `2026-07-28`, `2025-11-25`, `2025-06-18` and `2025-03-26`. Clients should use the lifecycle for their chosen protocol version:
+```json
+{
+  "mcpServers": {
+    "hmd": {
+      "type": "http",
+      "url": "https://wiki.example.com/_/mcp",
+      "headers": { "Authorization": "Bearer hmd_your_token" }
+    }
+  }
+}
+```
 
-   - `2026-07-28` uses `server/discover` and modern per-request metadata: protocol version, client information and client capabilities. It requires the matching `MCP-Protocol-Version` header.
-   - The three `2025` versions use `initialize`, then `notifications/initialized`, followed by tool requests. The initial request can omit the version header and modern metadata. Subsequent requests should send the negotiated version header; absent headers use the legacy transport's `2025-03-26` fallback.
+Ask the assistant to list your namespaces to check the connection.
 
-   Prefer a compatible MCP SDK rather than constructing protocol messages manually. HMD does not issue persistent sessions or provide GET event streams. Historical pre-Streamable HTTP+SSE transport is not supported. Check your client's transport support before relying on it.
+## What the assistant can do
 
-## How authentication works
+| Token access | The assistant can |
+| --- | --- |
+| read | List, read and search pages, follow backlinks, see recent changes, run the health report, read attachment text |
+| write | Create, edit and delete pages, upload attachments |
+| settings | Read and change namespace settings, in every namespace |
 
-The MCP endpoint never redirects to the login page the way a browser request does. With OAuth enabled, an unauthenticated request returns **HTTP 401** and the protected-resource metadata challenge. A missing, malformed, or expired Bearer token returns a JSON body like `{"error":"unauthorized"}`. OAuth access tokens are accepted only for `/_/mcp`; they are not PATs.
+- Write does not include read. Tick both for an assistant that edits.
+- Every change is a normal Git commit, so you can review and revert it in page history.
+- Hidden pages and templates are never visible to the assistant.
 
-Authenticated requests enforce the credential's bounds intersected with the user's current permissions. OAuth also checks the live grant and client policy; a previously issued token does not preserve permissions later removed:
+The full tool list is in [[MCP Tool Reference]].
 
-- **read** access provides `list_pages`, `read_page`, `list_namespaces`, `search`, `backlinks`, `recent_changes`, and `health`.
-- **write** access permits `save_page`, `delete_page`, `upload_attachment`, and `edit_page` for exact replacements and dry-run diffs. It does not imply **read**; request both actions when both are needed.
-- **settings** access provides `read_namespace` and `save_namespace`.
-- `read_attachment` requires read access. When document search is enabled, `search_attachments` also requires read access.
-- **settings** implies read and write and bypasses namespace restrictions.
-- A token restricted to particular namespaces can only list, read, or write pages in those namespaces. `recent_changes` omits any commit that touches a file outside the caller's access.
-- OAuth tool errors identify the missing action scope or namespace and explain when reconnecting with narrower or additional consent can help.
-- Some MCP applications and services request only `read` by default. For editing, configure the application's OAuth scopes to request `read write`, allow both actions in its HMD registration, and reconnect to grant consent. Registration permissions alone do not add `write` to the application's request.
+## Common problems
 
-HMD's MCP tools operate on ordinary pages only. Hidden pages and `.wiki.yaml` are outside the agent's reach.
-
-## Write with optimistic locking
-
-Each page carries a hash. Read a page first and pass its returned `hash` as `basehash` when you save; each successful save returns the new hash for the next update. If you save with a stale hash, HMD returns a conflict instead of silently overwriting another writer's changes. On conflict, re-read the page, merge, and retry with the fresh hash.
-
-## Attach a file
-
-1. Call `upload_attachment` with the owning page slug and the original filename. HMD returns three values:
-
-   - `upload_url` — a one-use multipart upload URL
-   - `attachment_url` — the URL of the uploaded file, under `/_/attachments/`
-   - `expires_at` — the expiry time, 10 minutes later
-
-2. POST the file to `upload_url` as multipart field `file`:
-
-   ```sh
-   curl -s -X POST https://wiki.example.com/_/api/attachment-uploads/TOKEN \
-     -F "file=@report.pdf"
-   ```
-
-   The upload URL works once and expires after 10 minutes, so retry a fresh `upload_attachment` if you miss the window.
-
-3. Add the returned `attachment_url` to the owning page with `save_page`. Use `[name](attachment_url)` for a link, or `![alt](attachment_url)` for an embedded image. Read the page first and send its hash as `basehash`.
-
-When document search is enabled, HMD keeps a hidden, Git-tracked extracted text sidecar beside each uploaded source. `read_attachment` returns that cached text and `search_attachments` searches it. Plain Markdown and text sources get a sidecar automatically even when document search is off.
-
-## Common pitfalls
-
-- **The agent gets 401 after you create a token.** `HMD_SERVER_BASE_URL` must match the origin the agent uses, and the token must include the scope the tools require.
-- **Writes keep failing with a conflict.** You saved with a stale `basehash`. Re-read the page and retry; HMD never overwrites silently.
-- **Hidden pages do not appear.** Draft pages, hidden templates, and `.wiki.yaml` are never visible to MCP tools.
+- **401 Unauthorized.** The token is wrong, expired or revoked, or MCP is off. Check the token in **Settings → Access tokens**.
+- **The assistant can read but not edit.** The token has no **write** access. Create a new token with read and write.
+- **Connection refused or wrong address.** The base URL must match the address the assistant uses, and HMD must be restarted after turning MCP on.
 
 ## Next steps
 
-The exact tool list and scope table: [[MCP Tool Reference]]. The agent-side pattern that combines these tools into a durable knowledge base: [[LLM Wiki]].
+[[MCP Tool Reference]] for every tool, and [[LLM Wiki]] for an assistant-maintained knowledge base.

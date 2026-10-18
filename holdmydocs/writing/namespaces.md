@@ -3,55 +3,41 @@ title: Namespaces
 tags: hmd, writing
 ---
 
-Organise pages into top-level namespaces, each with its own visibility, navigation and appearance.
+A namespace is a separate area of the wiki, such as `notes`, `team` or `handbook`. Each has its own pages, navigation, look and visibility. Use one per project or audience.
 
-Every page belongs to exactly one namespace: the first path segment of its slug. In the page address `docs/guides/install`, `docs` is the namespace and `guides` is filing only; the file on disk is `docs/guides/install.md`. Namespaces are never nested; a directory inside a namespace is just an organising folder.
+The namespace is the first part of a page's address. In `team/guides/onboarding`, `team` is the namespace and `guides` is a folder inside it. Namespaces do not nest.
 
-## How a namespace is configured
+## Create a namespace
 
-An optional `.namespace.yaml` in the namespace's directory configures it:
+1. Open **Settings → Namespaces** and click **New namespace**.
+2. Enter a short name without spaces or slashes, such as `team`.
+3. Save. The namespace is private until you make it public.
 
-| Key | What it does |
+## Change a namespace
+
+Open **Settings → Namespaces** and click **Edit** next to it.
+
+| Section | What you can change |
 | --- | --- |
-| `index` | The page that takes over `/<namespace>/` as the namespace's index page |
-| `title`, `description` | Display name and description for the namespace |
-| `public` | Whether anonymous visitors can read the whole namespace |
-| `widgets` | The sidebar widgets shown for the namespace |
-| `skin`, `palette` | Appearance shown to anonymous visitors of a public namespace |
-| `new` | The quick-create template: `template` names the hidden template page, `slug` is the slug pattern for new pages |
-| `tree` | Preferred ordering of pages in the namespace tree |
+| General | Description, homepage (**index page**), page order in the sidebar and quick-create template |
+| Published | Whether anyone can read it without signing in, and how it looks to them |
+| Static site | Settings for exporting it as a website, see [[Static Export]] |
+| Widgets | What appears in the sidebar |
 
-The `new` block is what enables `ctrl-j` quick-create. For example, a daily journal namespace might declare:
+**Reset namespace settings** puts these back to the defaults and keeps every page.
 
-```yaml
-new:
-  template: template
-  slug: '{{.Now.Format "2006-01-02"}}'
-```
+## Public or private
 
-Every field is optional. A namespace with no `.namespace.yaml` gets the built-in defaults: the standard widget set, private.
+Visibility covers the whole namespace, never single pages. A public namespace lets anyone read every page and attachment in it without signing in. Keep anything internal in a separate private namespace.
 
-## Manage namespaces
+## Quick-create pages
 
-1. Open `/_/settings/namespaces`.
+Give a namespace a quick-create template and `ctrl-j` (`cmd-j` on macOS) opens a new page from it, named automatically. This suits a daily log or meeting notes. Set it under **General**; the template is a hidden page you write once. [[Namespace Configuration Reference]] has the naming patterns.
 
-2. Review the rows: name, page count and visibility for every namespace. Click a name to open its index.
+## Delete a namespace
 
-3. Choose **Edit** to open General (name, description, index, tree order and quick-create). Use Published, Static site and Widgets in the nested navigation for the other settings. Preview and export actions are on the list; the Static site page also offers preview.
-
-The General page has one **Delete namespace** action. If files exist, the UI asks for confirmation; deletion removes the namespace and every file beneath it, including pages and hidden templates. **Reset namespace settings** removes only `.namespace.yaml`, keeping content.
-
-You can also write `.namespace.yaml` directly into the repository; the running instance picks it up on its next sync. See [[Namespace Configuration Reference]] for the full field reference.
-
-## Public and private namespaces
-
-Visibility is whole-namespace, never per-page. With `public: true`, every page, wiki-link and attachment in the namespace is readable anonymously. A private namespace returns the same result for a missing page and an existing private page, so an anonymous visitor cannot tell the difference.
-
-## Common pitfalls
-
-- Namespace names are single directory names: no slashes, no leading dot. The segments `_` and `attachments` are reserved.
-- Setting `public: true` exposes everything in the namespace. Use a separate private namespace for content that must stay internal.
+**Delete namespace** removes the namespace and every page and file in it. It asks you to confirm first. Deleted pages stay in Git history, but no longer appear in the wiki.
 
 ## Next steps
 
-[[Pages]], [[Namespace Configuration Reference]], [[Settings And Administration]].
+[[Pages]], [[Static Export]], [[Settings And Administration]].

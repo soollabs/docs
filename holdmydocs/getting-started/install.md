@@ -3,190 +3,200 @@ title: Install HMD
 tags: hmd, getting-started
 ---
 
-Start a private HMD instance on your own computer. This guide uses local storage so you can try the editor without setting up a Git host, a domain, or an external service.
-
-Choose **Docker Compose** if you use containers, or **a bare binary** if you want to run the Go application directly. Both paths end at the same sign-in screen. If someone has already installed HMD for you, skip to [[Your First Wiki]].
+Start a private HMD instance on your own computer with local storage. If someone has already installed HMD for you, skip to [[Your First Wiki]].
 
 ## What you need
 
-- Git to download the source.
-- Docker Engine with the Compose plugin, or Go 1.27.2 or newer to build locally.
-- OpenSSL to generate a password, and a password manager to record it.
-- Two persistent directories or volumes: one for content, one for application state. Application state must be on local disk, not NFS.
-- An unused local port `8080` and a unique administrator password of at least 12 characters.
+- A Linux, macOS or Windows computer, or Docker.
+- An administrator password of at least 12 characters, kept in a password manager.
 
-You do **not** need a remote Git repository, a separate database service, an AI account, or Apache Tika. Those are not prerequisites for writing pages.
+Nothing else: no database, Git hosting account or AI service.
 
-## Option 1: Docker Compose
+## Option 1: Release binary
 
-### Quick trial
+Every release publishes a binary per platform and a `SHA256SUMS` file on the [releases page](https://github.com/soollabs/holdmydocs/releases).
 
-For a short local trial, use the repository's `docker-compose.yaml`. Clone the source and generate a password:
+1. Download the latest release for this machine and verify it (Linux and macOS):
 
-```sh
-git clone https://github.com/soollabs/holdmydocs.git hmd
-cd hmd
-export HMD_ADMIN_USER=admin
-export HMD_ADMIN_PASSWORD="$(openssl rand -base64 18)"
-docker compose up -d --build
-curl -f http://127.0.0.1:8080/_/ready
-```
+   ```sh
+   tag="$(curl -fsSLo /dev/null -w '%{url_effective}' https://github.com/soollabs/holdmydocs/releases/latest)"
+   tag="${tag##*/}"
+   os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+   case "$(uname -m)" in x86_64|amd64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; esac
+   file="hmd-$tag-$os-$arch"
+   curl -fsSLO "https://github.com/soollabs/holdmydocs/releases/download/$tag/$file"
+   curl -fsSLO "https://github.com/soollabs/holdmydocs/releases/download/$tag/SHA256SUMS"
+   sha256sum --ignore-missing -c SHA256SUMS   # macOS: shasum -a 256 --ignore-missing -c SHA256SUMS
+   install -m 755 "$file" hmd
+   ```
 
-Record the generated password in your password manager. Run `printf '%s\n' "$HMD_ADMIN_PASSWORD"` to display it in this terminal, then open <http://127.0.0.1:8080>, sign in and continue with [[First-Run Setup]].
+   On Windows, download `hmd-<tag>-windows-amd64.exe` and `SHA256SUMS` from the releases page, and compare the output of `Get-FileHash .\hmd-<tag>-windows-amd64.exe` with the matching line.
 
-The included Compose file requires both environment variables on every `docker compose` command, including `down`, although HMD uses them only to create the first administrator. Keep this terminal open. In a new terminal, export the same username and saved password before running Compose.
+2. Create the data directories, generate and save a password, then run HMD in the foreground:
 
-Stop the trial with `docker compose down` without `--volumes` to keep your pages and account. For a longer-running installation, use the `compose.local.yaml` example below so you can remove the bootstrap credentials from the environment. Do not run both stacks against the same data volumes.
+   ```sh
+   install -d -m 700 ./data/app ./data/repo
+   export HMD_ADMIN_PASSWORD="$(openssl rand -base64 18)"
+   printf '%s\n' "$HMD_ADMIN_PASSWORD"
+   HMD_SERVER_BIND=127.0.0.1:8080 \
+   HMD_SERVER_REPO_DIR=./data/repo \
+   HMD_APP_DIR=./data/app \
+   HMD_ADMIN_USER=admin \
+   ./hmd
+   ```
 
-### Longer-running installation
+3. In another terminal, run `curl -f http://127.0.0.1:8080/_/ready`, then open <http://127.0.0.1:8080> and sign in as `admin`.
 
-### Download HMD
+   ![Local password sign-in screen](/_/attachments/holdmydocs/getting-started/install/login.png)
 
-```sh
-git clone https://github.com/soollabs/holdmydocs.git hmd
-cd hmd
-```
+4. Follow [[First-Run Setup]] to name your wiki and create its first namespace.
+5. Stop HMD with **Ctrl+C**. Later starts do not need the administrator variables:
 
-For a production deployment, check out the release revision you intend to run rather than following the moving default branch.
+   ```sh
+   HMD_SERVER_BIND=127.0.0.1:8080 \
+   HMD_SERVER_REPO_DIR=./data/repo \
+   HMD_APP_DIR=./data/app \
+   ./hmd
+   ```
 
-### Create a local configuration
+Keep both `data` folders: they hold your pages, accounts and settings. To keep HMD running after you log out and start it at boot, see **Run as a service** below.
 
-In the cloned `hmd` directory, create a file named `compose.local.yaml` with this content. This local-only example deliberately leaves out Git remote credentials; the repository's `docker-compose.yaml` is a separate example for remote sync and optional document extraction.
+## Option 2: Docker Compose
 
-```yaml
-services:
-  hmd:
-    build: .
-    ports:
-      - "127.0.0.1:8080:8080"
-    environment:
-      GOMEMLIMIT: 384MiB
-      HMD_ADMIN_USER: "${HMD_ADMIN_USER:-}"
-      HMD_ADMIN_PASSWORD: "${HMD_ADMIN_PASSWORD:-}"
-    volumes:
-      - repo:/data/repo
-      - app:/data/app
-    user: "65532:65532"
-    read_only: true
-    cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
-    init: true
-    restart: unless-stopped
-    cpus: 1.0
-    mem_limit: 512m
-    pids_limit: 128
-    tmpfs:
-      - /tmp:size=64m,mode=1777,nosuid,nodev,noexec
+The image is `ghcr.io/soollabs/holdmydocs`, tagged with each release. Use a release tag: `latest` follows unreleased development.
 
-volumes:
-  repo:
-  app:
-```
+1. Find the latest release tag:
 
-The loopback binding makes the wiki accessible only from this computer. Named volumes keep your content and accounts when the container is replaced.
+   ```sh
+   curl -fsSLo /dev/null -w '%{url_effective}\n' https://github.com/soollabs/holdmydocs/releases/latest
+   ```
 
-The container runs as an unprivileged user with a read-only container filesystem, no Linux capabilities and no privilege escalation. CPU, memory and process limits bound resource use; `tmpfs` provides temporary writable storage without executable files. HMD still saves pages and account state to the mounted volumes.
+2. Create `compose.local.yaml` in an empty directory, replacing `<tag>` with that tag:
 
-### Start HMD
+   ```yaml
+   services:
+     hmd:
+       image: ghcr.io/soollabs/holdmydocs:<tag>
+       ports:
+         - "127.0.0.1:8080:8080"
+       environment:
+         HMD_ADMIN_USER: "${HMD_ADMIN_USER:-}"
+         HMD_ADMIN_PASSWORD: "${HMD_ADMIN_PASSWORD:-}"
+       volumes:
+         - repo:/data/repo
+         - app:/data/app
+       restart: unless-stopped
 
-Generate a unique password by running these commands from the cloned `hmd` directory:
+   volumes:
+     repo:
+     app:
+   ```
 
-```sh
-export HMD_ADMIN_USER=admin
-export HMD_ADMIN_PASSWORD="$(openssl rand -base64 18)"
-docker compose -f compose.local.yaml up -d --build
-```
+   `127.0.0.1` keeps the wiki reachable only from this computer. The two volumes keep your pages and accounts when the container is replaced. For a hardened setup with Git sync and document search, start from the `docker-compose.yaml` in the [source repository](https://github.com/soollabs/holdmydocs).
 
-Record the password in your password manager; `printf '%s\n' "$HMD_ADMIN_PASSWORD"` displays it in this terminal. The first build downloads dependencies and compiles HMD. When the container has started, check readiness:
+3. Generate a password and start HMD:
 
-```sh
-curl -f http://127.0.0.1:8080/_/ready
-```
+   ```sh
+   export HMD_ADMIN_USER=admin
+   export HMD_ADMIN_PASSWORD="$(openssl rand -base64 18)"
+   docker compose -f compose.local.yaml up -d
+   ```
 
-A successful response means HMD can read its repository and its search index is open. If it is not ready yet, inspect startup logs:
+4. Save the password (`printf '%s\n' "$HMD_ADMIN_PASSWORD"` displays it), then check readiness:
 
-```sh
-docker compose -f compose.local.yaml logs --tail=100 hmd
-```
+   ```sh
+   curl -f http://127.0.0.1:8080/_/ready
+   ```
 
-### Sign in
+   If it is not ready, read the logs:
 
-Open <http://127.0.0.1:8080> and sign in as `admin` with the password you chose.
+   ```sh
+   docker compose -f compose.local.yaml logs --tail=100 hmd
+   ```
 
-![Local password sign-in screen](/_/attachments/holdmydocs/getting-started/install/login.png)
+5. Open <http://127.0.0.1:8080>, sign in as `admin` and follow [[First-Run Setup]].
+The administrator variables are only read on the very first start. Later `docker compose` commands work without them.
 
-After a successful sign-in, follow [[First-Run Setup]] to name your wiki and create its first namespace.
+## Option 3: Build from source
 
-### Remove the bootstrap credentials
-
-The environment variables create the first administrator; the account is persisted in the `app` volume. After confirming sign-in works, remove those variables and recreate the container so it no longer holds them:
-
-```sh
-unset HMD_ADMIN_USER HMD_ADMIN_PASSWORD
-docker compose -f compose.local.yaml up -d --force-recreate
-```
-
-Sign in again to confirm the saved account still works. Keep the `app` volume: removing it removes your accounts and local settings.
-
-## Option 2: Bare binary
-
-Download and build the source:
+You need Git and the Go version named in the source's `go.mod`.
 
 ```sh
 git clone https://github.com/soollabs/holdmydocs.git hmd
 cd hmd
+git checkout "$(git describe --tags --abbrev=0)"
 go build -o hmd ./cmd/hmd
-install -d -m 700 ./data/app ./data/repo
 ```
 
-Generate a password and record it in your password manager, then run HMD in the foreground:
+Then continue from step 2 of Option 1 above.
 
-```sh
-export HMD_ADMIN_PASSWORD="$(openssl rand -base64 18)"
-printf '%s\n' "$HMD_ADMIN_PASSWORD"
-HMD_SERVER_BIND=127.0.0.1:8080 \
-HMD_SERVER_REPO_DIR=./data/repo \
-HMD_APP_DIR=./data/app \
-HMD_ADMIN_USER=admin \
-./hmd
-```
+## Run as a service
 
-In another terminal, check `curl -f http://127.0.0.1:8080/_/ready`, then open <http://127.0.0.1:8080> and sign in. Complete [[First-Run Setup]].
+On Linux, systemd keeps HMD running in the background, starts it at boot and restarts it after **Shut down**.
 
-Stop HMD with **Ctrl+C** and run `unset HMD_ADMIN_PASSWORD`. On subsequent starts, run it without the bootstrap credentials, from the same `hmd` directory:
+1. Create a user and data folders for HMD, and install the binary:
 
-```sh
-HMD_SERVER_BIND=127.0.0.1:8080 \
-HMD_SERVER_REPO_DIR=./data/repo \
-HMD_APP_DIR=./data/app \
-./hmd
-```
+   ```sh
+   sudo useradd --system --home-dir /var/lib/hmd --create-home hmd
+   sudo install -d -m 700 -o hmd -g hmd /var/lib/hmd/app /var/lib/hmd/repo
+   sudo install -m 755 hmd /usr/local/bin/hmd
+   ```
 
-Both data directories must be private, owned by the account running HMD, and must not overlap. Keep their permissions at `0700`. For a long-running installation, use a dedicated service account and a process supervisor rather than leaving a terminal open.
+   To keep the pages and accounts from your trial, stop it and copy them across first: `sudo cp -a data/app data/repo /var/lib/hmd/ && sudo chown -R hmd:hmd /var/lib/hmd`.
+
+2. Create `/etc/systemd/system/hmd.service`:
+
+   ```ini
+   [Unit]
+   Description=Hold My Docs
+   After=network-online.target
+
+   [Service]
+   User=hmd
+   Environment=HMD_SERVER_BIND=127.0.0.1:8080
+   Environment=HMD_SERVER_REPO_DIR=/var/lib/hmd/repo
+   Environment=HMD_APP_DIR=/var/lib/hmd/app
+   ExecStart=/usr/local/bin/hmd
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   On a fresh install with no trial data, also add `Environment=HMD_ADMIN_USER=admin` and `Environment=HMD_ADMIN_PASSWORD=...` for the first start, then remove them.
+
+3. Start it and check it:
+
+   ```sh
+   sudo systemctl enable --now hmd
+   systemctl status hmd
+   ```
+
+Docker installs already restart automatically through `restart: unless-stopped`.
 
 ## Before exposing HMD to a network
 
-The examples above are local trials, not an internet-facing deployment. Before sharing the live wiki:
+These examples are local trials. Before sharing the wiki:
 
-1. Put HTTPS in front of HMD and configure its public URL and trusted proxies: [[Reverse Proxies]].
-2. Review accounts, permissions, and public namespaces: [[Authentication And Access]].
+1. Put HTTPS in front of HMD and set its public URL and trusted proxies: [[Reverse Proxies]].
+2. Review accounts, permissions and public namespaces: [[Authentication And Access]].
 3. Back up both the content repository and application state, and test recovery: [[Storage And Recovery]].
-4. Pin a release revision or image and plan upgrades: [[Upgrade HMD]].
+4. Plan upgrades: [[Upgrade HMD]].
 
-You can add an HTTPS Git remote later with [[Git Sync]]. Search inside PDF and Office attachments is also optional; see [[Attachments]] for the Apache Tika requirements. Neither is needed for normal Markdown search.
+Add an HTTPS Git remote later with [[Git Sync]]. PDF and Office attachment search is optional; see [[Attachments]] for the Apache Tika requirements.
 
 ## Common pitfalls
 
-- **Port 8080 is already in use.** For Docker, change the first `8080` in the port mapping, for example `127.0.0.1:8081:8080`. For a binary, change `HMD_SERVER_BIND` to `127.0.0.1:8081`. Use the new port in the browser and readiness check too.
-- **Startup reports an unsafe data directory.** Check that the service account owns both directories and they have mode `0700`. Do not loosen permissions to make startup succeed. Old root-owned container volumes need a planned recovery; see [[Storage And Recovery]].
-- **The first account is not created.** Supply both bootstrap variables and a unique password of at least 12 characters. HMD rejects weak or recognised placeholder passwords. Check the startup logs for the specific reason.
-- **The remote is unavailable.** A successful local save can still be waiting for a background push. A failed push and a failed page save are different problems; see [[Git Sync]].
+- **Port 8080 is in use.** Docker: change the first `8080` in the port mapping, for example `127.0.0.1:8081:8080`. Binary: set `HMD_SERVER_BIND` to `127.0.0.1:8081`. Use the new port in the browser and readiness check.
+- **`sha256sum: command not found` on macOS.** Use `shasum -a 256 --ignore-missing -c SHA256SUMS`.
+- **`unsafe data directory` at startup.** The data folders must belong to the user running HMD and be private: `chmod 700` them. Do not make them more open.
+- **First account not created.** Set both bootstrap variables with a unique password of at least 12 characters. HMD rejects weak or placeholder passwords; the startup logs give the reason.
+- **Remote unavailable.** A local save can still be waiting for a background push. See [[Git Sync]].
 
 ## Stop or remove a local trial
 
-For Docker, `docker compose -f compose.local.yaml down` stops the stack and keeps its named volumes. Do not add `--volumes` unless you intend to delete all of this installation's pages and accounts.
-
-For a binary, stop the process. Remove `data/repo` and `data/app` only when you are sure you no longer need their contents or have a verified backup.
+- Docker: `docker compose -f compose.local.yaml down` stops the stack and keeps the volumes. Add `--volumes` only to delete all pages and accounts.
+- Binary: stop the process. Delete `data/repo` and `data/app` only if you no longer need them or have a verified backup.
 
 ## Next steps
 

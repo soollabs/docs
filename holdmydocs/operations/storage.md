@@ -3,41 +3,61 @@ title: Storage And Recovery
 tags: hmd, operations
 ---
 
-This page describes where HMD keeps data, what must be backed up, and the tested restore procedure.
+Where HMD keeps data, what to back up, and how to restore it.
 
-## Storage classes
+## What HMD stores
 
-HMD has two storage classes:
+HMD keeps everything in two folders. Back up both.
 
-```text
-repo/                 Authoritative Git content: pages, attachments, wiki and namespace config
-app/users.json        Authoritative accounts, password hashes, PAT digests, preferences
-app/oauth.json        OAuth clients, grants, token digests, replay and revocation state (retain when present)
-app/config.yaml       Local instance configuration
-app/sessions.json     Disposable active sessions
-app/search.bleve*     Rebuildable search index and manifest
-app/models/           Rebuildable downloaded embedding model
-```
+| Folder | Holds |
+| --- | --- |
+| `repo` | Your pages, attachments, and wiki and namespace settings, as a Git repository |
+| `app` | Accounts, passwords (hashed), access tokens, OAuth connections, server settings, and a search index HMD rebuilds if lost |
 
-Keep `app` on local disk. HMD updates account and session state with in-process locking and atomic rename writes, and the repository needs real Git filesystem semantics; the bundled Compose file documents the same requirement for the app directory. Both directories must be private and owned by the HMD service account. Use NFS for the repository only after verifying that it supports Git's locking and atomic file operations. Keep local commits backed up even when a remote is configured: they are not mirrored until the remote accepts the push.
+- Keep `app` on a local disk, not a network share.
+- Both folders must belong to the user running HMD and be private (`chmod 700`).
+- Saves reach a Git remote a moment later, so the local `repo` can be ahead of it.
 
 ## Backup
 
-1. Confirm the sync state is healthy and record `git -C repo rev-parse HEAD`.
-2. Stop HMD or take filesystem-consistent snapshots of both directories.
-3. Back up the full Git repository, including `.git`, and `app/users.json`, `app/config.yaml`, and `app/oauth.json` whenever it exists, even if OAuth is currently disabled. Include secret files referenced by configuration in a separate protected secret backup.
-4. Treat backup access as administrative access. `users.json`, configuration, OAuth state, and secret files must not enter a public repository. OAuth state has no plaintext bearer tokens but contains registrations and revocation history needed to validate or reject credentials.
+Stop HMD, copy both folders, start it again. A remote Git repository is not a backup on its own: it has no accounts or settings.
 
-## Restore drill
+Service install ([[Install HMD]]):
 
-1. Restore `repo` and `app` to new directories owned by the service account, both mode `0700`. Restore secret files with mode `0600`.
-2. Start the same HMD version with `HMD_SERVER_REPO_DIR` and `HMD_APP_DIR` pointing at those directories.
-3. Check `/_/ready`, sign in with a known local account, open a recent page, and run `git -C repo fsck --full` and `git -C repo log -1`.
-4. Check the sync state before allowing writes. Rebuildable index and model data may be absent; HMD recreates them.
-5. If restoring OAuth state from an older snapshot, assume credentials revoked or rotated since that snapshot may be active again. Before exposing the instance, stop HMD and disable affected restored client registrations with `hmd -oauth-client-disable -oauth-client-id "CLIENT_ID"`. Provision replacement clients and require fresh user consent. A backup cannot preserve revocations made after it was taken.
+```sh
+sudo systemctl stop hmd
+sudo tar -czf "hmd-backup-$(date +%F).tar.gz" -C /var/lib/hmd app repo
+sudo systemctl start hmd
+```
 
-OAuth state is not disposable cache data. An uncertain persistence failure after replacing `oauth.json` makes OAuth fail closed until HMD restarts. Resolve the filesystem problem, preserve the state file, and restart so HMD reopens the on-disk state. Do not delete `oauth.json` to clear the error. See [[MCP OAuth]] for token-response recovery and single-process restrictions.
+Docker Compose install, run from the folder with `compose.local.yaml`:
 
-This procedure was tested end to end on a demo instance: restoring both directories into fresh mode-0700 directories and starting the same version reproduced accounts, pages, and the exact Git history (`fsck --full` clean, HEAD matching the pre-restore snapshot). Test the same procedure periodically on an isolated host. Do not test a restore by overwriting the live data directories.
+```sh
+docker compose -f compose.local.yaml stop
+docker run --rm -v "$(basename "$PWD")_app:/data/app:ro" -v "$(basename "$PWD")_repo:/data/repo:ro" \
+  -v "$PWD:/backup" alpine tar -czf "/backup/hmd-backup-$(date +%F).tar.gz" -C /data app repo
+docker compose -f compose.local.yaml start
+```
 
-For OAuth-enabled instances, also verify restored client registrations, grant expiry, refresh generations and revocations against the snapshot on that isolated host. The accounts/content/Git restore drill above is not evidence that OAuth recovery has been tested.
+If the volume names differ, find them with `docker volume ls`.
+
+- Keep backups private: they contain password hashes, token records and settings.
+- Back up any secret files you configured, such as a Git token file, separately.
+- Snapshots of both folders taken at the same moment work too, without stopping HMD.
+
+## Restore
+
+1. Stop HMD.
+2. Unpack the backup in place of the current folders. For a service install:
+
+   ```sh
+   sudo tar -xzf hmd-backup-2026-10-18.tar.gz -C /var/lib/hmd
+   sudo chown -R hmd:hmd /var/lib/hmd
+   ```
+
+3. Start the same HMD version the backup came from, then sign in and open a recent page.
+4. If you use OAuth, clients revoked after the backup may work again. Disable and re-register them in **Settings → MCP OAuth clients** before reopening the wiki.
+
+Try a restore on another machine now and then, so you know it works. Never test by overwriting the live folders.
+
+If HMD logs `OAuth persistence is uncertain; restart required`, fix the disk problem and restart HMD. Do not delete `oauth.json`.

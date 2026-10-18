@@ -7,20 +7,20 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
 
 ## Prerequisites
 
-- A namespace that already has pages. The export action only appears for namespaces with at least one page.
-- A publishing URL in **Edit → Static site → export base URL**, such as `https://docs.example.org/`. Save it before previewing or exporting. When it is missing, the browser asks before using the main HMD URL for that download or preview; this does not save the fallback.
-- A namespace `index` setting pointing to an existing page, if you want that page to be the site homepage. Without this setting, the homepage asks readers to select a page from the sidebar. See [[Namespace Configuration Reference]].
+- A namespace with at least one page. The export action only appears then.
+- The address the site will be published at, set in **Edit → Static site → export base URL**, for example `https://docs.example.org/`.
+- Optional: a homepage, set in **Edit → General → index page**. Without one, visitors start on a page that asks them to pick from the sidebar.
 
-> Treat the archive as publishable content, not an access-controlled backup. The static host does not inherit HMD accounts or namespace permissions. Review every page and attachment before making the archive public.
+> Everything in the namespace becomes public, including attachments no page links to. HMD sign-in does not protect an exported site.
 
 ## Export a namespace
 
-1. Open **Namespaces** from the settings menu. The rows show name, page count, visibility and Edit / Preview / Export actions; the name opens the namespace index.
+1. Open **Namespaces** from the settings menu. Each row shows name, page count, visibility and Edit / Preview / Export actions.
 
    ![Namespace list with preview and export actions](/_/attachments/holdmydocs/integrations/static-export/namespaces.png)
 
-2. Click **Export static site** next to the namespace. Use **Edit → Static site** to change export settings or preview them. Your browser downloads `{namespace}-export.zip`.
-3. Unpack the archive. It contains an `index.html`, one folder per page, the namespace's attachments, and the shared styles and scripts:
+2. Click **Export static site** next to the namespace. Your browser downloads `{namespace}-export.zip`.
+3. Unpack the archive. It holds an `index.html`, one folder per page, the namespace's attachments, and shared styles and scripts:
 
    ```text
    index.html
@@ -37,48 +37,52 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
    …
    ```
 
-4. Serve the unpacked directory over HTTP and open its `index.html` in a browser. Check the layout, links, sidebar and embedded images before publishing. Opening a local `file://` URL may block scripts or search.
+4. Serve the unpacked directory over HTTP and check the layout, links, sidebar and images. A local `file://` URL may block scripts or search.
 
-   ![A static preview of the fictional walking-group wiki](/_/attachments/holdmydocs/integrations/static-export/preview.png)
+   ![A static export of a fictional blog, served from a local directory](/_/attachments/holdmydocs/integrations/static-export/preview.png)
 
-   The namespace's **Static site** settings page controls the publishing URL, sitemap, bot rules and external links:
+5. Upload the directory to a static file server or CDN.
 
-   ![Namespace Static site settings](/_/attachments/holdmydocs/integrations/static-export/settings.png)
+The **Edit → Static site** page controls the publishing URL, sitemap, bot rules and external links:
 
-5. Upload the unpacked directory to an ordinary static file server or CDN.
+![Namespace Static site settings](/_/attachments/holdmydocs/integrations/static-export/settings.png)
 
 ## Preview without downloading
 
-Save the Static site settings, then choose **Preview** to open a snapshot in a new tab. The preview uses current pages and saved settings; generate another preview after making changes.
+Save the Static site settings, then choose **Preview** to open a snapshot in a new tab. Generate a new preview after each change.
 
-Only its creator can access the preview, and they must retain `settings` access to the namespace. Previews expire after 15 minutes. A new preview for the same namespace replaces your previous one. An instance allows four active previews; if it is full, wait for one to expire.
-
-Previewing does not publish the site or save settings. Sitemap entries use the publishing URL. Non-image attachments download instead of opening in the preview.
+- Only its creator can open it, and they need `settings` access to the namespace.
+- Previews expire after 15 minutes. A new preview for the same namespace replaces your previous one.
+- An instance allows four active previews. If it is full, wait for one to expire.
+- Previewing does not publish the site or save settings.
+- Sitemap entries use the publishing URL. Non-image attachments download instead of opening.
 
 ## What the export contains
 
-Static site settings control `sitemap.xml`, bot allowances in `robots.txt` and external links. The sitemap is enabled by default; bot access is blocked by default. Bot rules are voluntary, not access controls, and only apply at a domain root: merge them into the host's root `robots.txt` when publishing under a path prefix.
+| Setting | Behaviour |
+| --- | --- |
+| Sitemap | A `sitemap.xml` for search engines. On by default. |
+| Search bots | Blocked by default. Tick the bots to allow, or enter `*` in **custom bots** to allow all. Bots treat this as a request, not a lock. |
+| External links | Extra links in the sidebar or top bar, shown as text or icons. |
 
-Sidebar links use one shared Text or Icons mode. Links placed **Before search** require an icon and are icon-only; their label remains the accessible name and tooltip. Selected Font Awesome 6.7.2 SVG icons are downloaded during generation and bundled with attribution, so viewing the result does not need an icon CDN. Generation needs network access only when icons are selected and fails if an icon cannot be retrieved safely.
+The site uses the namespace's look and page order, without editing controls.
 
-HMD reserves `robots.txt` and `sitemap.xml` as first page path segments, regardless of letter case or sitemap settings. This includes descendants such as `robots.txt/guide`. HMD rejects these paths before writing the export; nested names such as `guides/robots.txt` are allowed. Turning off the sitemap removes an existing sitemap from reused output. Other stale files remain, so publish from a clean directory.
+- **Links** between pages in the namespace keep working. Links to pages in other namespaces become plain text, so use wiki-links between your docs pages.
+- **Attachments** are all included, even ones no page links to.
+- **Search** works in the browser with **Search docs** or **Ctrl+K** (**Cmd+K** on macOS). It covers page text, not attachments.
+- **Left out:** hidden pages, editing, sign-in, history and backlinks.
+- The site works at the root of a domain, under a folder such as `/docs/`, or from a local folder.
 
-Each page becomes `slug/index.html`, so every page gets its own folder and a stable location. The configured namespace index is also rendered at the root as `index.html`. The export uses the namespace's skin, palette, and ordered page tree, with a read-only page layout rather than the live application's controls.
+## Before you publish
 
-- **Wiki-links within the namespace** become ordinary relative links. Missing targets and targets outside the exported namespace become plain text.
-- **Navigation and bundled assets** use relative paths, so the site can be served at a domain root, under a prefix such as `/hmd/`, or opened locally.
-- **Namespace attachments** are copied into `attachments/`, and references using `/_/attachments/{namespace}/` are rewritten to that exported directory. Review attachments even if no current page links to them: the export copies the namespace's attachments, not just the files used by its pages.
-- **Ordinary Markdown links and external resources** are not generally rewritten. A link to a live HMD route can still lead to that route; a remote image still needs network access. Prefer wiki-links for links between documentation pages.
-
-The export includes browser-local search of exported page titles and text. Click **Search docs**, or press **Ctrl+K** (**Cmd+K** on macOS). Search works without an HMD server and sends no queries to an external service. It does not search inside attachments or provide the live wiki's search filters.
-
-Hidden pages are not exported. Editing, authentication, page history, backlinks, and health reports require a running HMD instance and are not part of the static site. The exported pages also include code-copy buttons and render Mermaid diagrams when JavaScript is enabled. Reading pages and following ordinary links do not require JavaScript.
-
-This documentation site is generated from HMD itself: its source is the `holdmydocs` namespace, and HMD exports that namespace for static hosting.
+1. Export into an empty folder. Reusing an old export can leave deleted pages online.
+2. Preview it locally from the unpacked folder with `python3 -m http.server 8000`, then open <http://127.0.0.1:8000/>.
+3. Click through the homepage, a few pages, images and downloads.
+4. Upload the whole folder, replacing the previous copy. Keep the previous export in case you need to roll back.
 
 ## Command-line export
 
-The CLI uses the configured content repository and inherits the namespace's export settings. Flags override those settings for this export without changing `.namespace.yaml`:
+For automated publishing, run the export from the command line. It uses the namespace's settings; flags override them for one run:
 
 ```sh
 hmd -export-namespace holdmydocs -export-dir ./site \
@@ -88,33 +92,12 @@ hmd -export-namespace holdmydocs -export-dir ./site \
   -export-links '[{"label":"GitHub","url":"https://github.com/soollabs/holdmydocs","icon":"fa-brands fa-github","location":"topbar","icon_only":true}]'
 ```
 
-Use `-export-sitemap=false` to disable the sitemap, `-export-robots-allow ''` to clear permitted bots, or `-export-links '[]'` to clear external links.
-
-The publishing URL is required even when sitemap generation is disabled. CLI export fails before creating output if neither namespace settings nor flags provide one; it does not prompt or fall back to the main HMD URL. Use `-export-use-main-base-url` to explicitly choose `server.base_url`; it cannot be combined with `-export-base-url`.
-
-## Publication checklist
-
-Before each release:
-
-1. Export into a clean directory. Do not merge the archive into an older export: deleted pages and attachments could remain publicly accessible.
-2. Check the root homepage and a deeply nested page. Follow the site title, sidebar links, wiki-links, and attachment links from both.
-3. Check narrow and wide layouts, the on-page outline, code blocks, images, and any Mermaid diagrams. Check that keyboard navigation and link focus work.
-4. Preview through a static HTTP server rather than relying on `file://`. For example, from the unpacked directory, with Python installed:
-
-   ```sh
-   python3 -m http.server 8000 --bind 127.0.0.1
-   ```
-
-   Visit `http://127.0.0.1:8000/`. If publishing under `/hmd/`, also preview at that prefix by serving a parent directory containing the export as `hmd/`.
-5. Check for requests to the live application's `/_/` routes and for missing assets in the browser's network panel. Review external links separately.
-6. Publish the complete directory, including fonts, scripts, and attachments. Configure the host to serve directory `index.html` files. Keep a copy of the previous export so you can roll back, and replace the published snapshot rather than leaving stale files behind.
-7. Recheck the public homepage, a nested page, and an attachment after deployment.
+`-export-sitemap=false` turns off the sitemap, `-export-robots-allow ''` blocks all bots and `-export-links '[]'` removes external links. The export needs a publishing address, from the namespace settings or `-export-base-url`.
 
 ## Common pitfalls
 
-- **The export action is missing.** It only shows for namespaces that already have pages. Create a page first, then export.
-- **The static site is a snapshot.** Re-export after editing pages or attachments. The export never follows your live namespace.
-- **Links break after you move pages.** The export mirrors the page tree at the moment you export. Re-export after reorganising a namespace.
+- **No export action.** The namespace has no pages yet. Create one first.
+- **Stale site.** The export is a snapshot. Re-export after editing pages or attachments, or after moving pages.
 
 ## Next steps
 

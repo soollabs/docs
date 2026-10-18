@@ -3,42 +3,38 @@ title: Skins And Palettes
 tags: hmd, reference
 ---
 
-A skin controls presentation — typography, spacing, borders, markers, and statusline segments. A palette controls colours. Both are per-user choices in `/_/settings` and never change page storage, namespace composition, or the wiki landing path.
+A skin sets presentation (typography, spacing, borders, markers, statusline segments). A palette sets colours. Both are per-user choices in `/_/settings` and never change page storage, namespace composition, or the wiki landing path.
 
 ## Skins
 
-There are five built-in skins. Each arrives with a paired palette; choosing a skin resets the palette to the pairing unless you pick a palette afterwards.
+Choosing a skin resets the palette to its pairing unless you pick a palette afterwards.
 
 | Skin | Look | Default palette |
 | --- | --- | --- |
-| `phosphor` | Terminal green, monospace, `#` markers — the default. | phosphor |
-| `newsprint` | Broadsheet — masthead, serif, justified columns, ink on paper. | solarized |
-| `journal` | Writing first — serif, wide measure, no chrome. | everforest |
-| `soft` | Rounded and low-contrast — warm sans, roomy leading, filled panels. | rosé pine |
-| `bare` | Subtraction only — no borders, no markers, wide margins. | one dark |
+| `phosphor` | Terminal green, monospace, `#` markers; the page title types itself in and links invert on hover. The default. | phosphor |
+| `newsprint` | Broadsheet: a centred masthead between double rules, serif, justified columns, an italic lede with a drop cap. | solarized |
+| `journal` | Writing first: serif, paper grain, ruled lines with a margin line, blockquotes as side notes, taped images. | everforest |
+| `soft` | Rounded and low-contrast: warm sans, a floating top bar, window dots on code blocks, callout cards. | rosé pine |
+| `bare` | No borders, wide margins, a large tight title with faint section numbers. | one dark |
+
+The phosphor title animation is skipped when the device asks for reduced motion.
 
 ![A fictional public blog in the newsprint skin, light mode](/_/attachments/holdmydocs/reference/skins-and-palettes/newsprint-light.png)
 
 ## Palettes
 
-There are eleven palettes: `phosphor`, `catppuccin`, `dracula`, `everforest`, `gruvbox`, `monokai`, `nord`, `one dark`, `rosé pine`, `solarized`, and `tokyo night`. Each supplies the full colour set for both light and dark mode.
-
+Eleven palettes, each with light and dark variants: `phosphor`, `catppuccin`, `dracula`, `everforest`, `gruvbox`, `monokai`, `nord`, `one dark`, `rosé pine`, `solarized`, `tokyo night`.
 
 ## Light, dark, and system mode
 
-The theme control in the top bar cycles through **System**, **Light**, and **Dark**. System is the default and follows your device's colour preference, including changes while the page is open.
+The theme control in the top bar cycles **System**, **Light**, **Dark**. System is the default and follows your device, including live changes.
 
-An explicit light or dark choice is remembered in this browser's local storage. Choosing System clears that override. This setting is separate from your account's skin and palette and also applies to anonymous public pages.
+An explicit light or dark choice is kept in this browser's local storage; choosing System clears it. It is separate from your skin and palette and also applies to anonymous public pages.
 
 ## How skin and palette interact
 
-- Choosing a skin resets the palette to the skin's pairing. If you then pick a different palette, that choice is remembered (`palette_explicit`) and the skin stops overriding it.
-- Skins and palettes are per user. A namespace's `skin` and `palette` keys in `.namespace.yaml` set what anonymous and public viewers of that namespace see; signed-in users keep their own choices. See [[Namespace Configuration Reference]].
-- The install-wide default skin comes from `config.yaml` (`server.skin` / `HMD_SERVER_SKIN`); see [[Configuration Reference]].
-
-## Common pitfalls
-
-- A skin change that "loses" your palette is the reset behaviour, not a bug — pick the palette again after the skin.
-- The same repository looks different to you and to anonymous visitors when the namespace sets a skin or palette you have overridden for yourself.
+- Picking a palette after a skin is remembered (`palette_explicit`), and the skin stops overriding it. If a skin change "loses" your palette, pick the palette again.
+- A namespace's `skin` and `palette` keys in `.namespace.yaml` set what anonymous and public viewers see. Signed-in users keep their own choices, so you may see a different look from anonymous visitors. See [[Namespace Configuration Reference]].
+- The install-wide default skin is `server.skin` / `HMD_SERVER_SKIN` in `config.yaml`; see [[Configuration Reference]].
 
 Next: [[Limitations]].

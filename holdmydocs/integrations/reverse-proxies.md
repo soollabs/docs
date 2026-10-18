@@ -3,44 +3,31 @@ title: Reverse Proxies
 tags: hmd, integrations, operations
 ---
 
-Put HMD behind a TLS-terminating reverse proxy that preserves the public origin and forwards `X-Forwarded-Proto` from a trusted peer.
-
-## Prerequisites
-
-- A reverse proxy (Nginx Proxy Manager, Traefik, Caddy, or similar) that can terminate TLS and forward the headers below.
-- Two HMD settings, both in the config file or their environment-variable equivalents:
-
-  ```yaml
-  server:
-    base_url: https://wiki.example.com
-    trusted_proxies: ["10.0.0.0/8"]
-  ```
+Run HMD behind a TLS-terminating proxy (Caddy, Traefik, Nginx Proxy Manager) that keeps the public origin and sends `X-Forwarded-Proto` from a trusted peer.
 
 ## Configure HMD
 
-1. Set `server.base_url` to HMD's canonical public origin, for example `https://wiki.example.com`. It must be a bare origin: scheme and host, with no path, query, or fragment. It is the exact browser **Origin** HMD accepts for cookie-authenticated writes, the origin used for MCP upload URLs and the OIDC callback, and the issuer/resource origin for MCP OAuth. It is required when MCP or OIDC is enabled.
-2. Set `server.trusted_proxies` to the CIDRs of the peers HMD should trust for forwarding headers. This is typically the reverse proxy's own address or the network it runs on. List only peers you control, never a broad public block:
-
-   ```yaml
-   server:
-     trusted_proxies: ["10.0.0.0/8"]
-   ```
-
-   If a CDN you control is the outer hop, add its documented address ranges to this list.
-
+1. Set `server.base_url` to the public origin, for example `https://wiki.example.com`. Scheme and host only: no path, query or fragment. HMD uses it as the browser **Origin** it accepts for cookie-authenticated writes, for MCP upload URLs, the OIDC callback and MCP OAuth. Required when MCP or OIDC is enabled.
+2. Set `server.trusted_proxies` to the CIDRs of the peers whose forwarding headers HMD should trust, usually the proxy's own address or network. List only peers you control, never a broad public block. If you control a CDN in front of the proxy, add its ranges too.
 3. Restart HMD.
+
+```yaml
+server:
+  base_url: https://wiki.example.com
+  trusted_proxies: ["10.0.0.0/8"]
+```
+
+Both settings also have environment-variable equivalents.
 
 ## Configure the proxy
 
-Terminate TLS at the proxy and send `X-Forwarded-Proto: https` to the backend. HMD ignores it from every peer not listed in `server.trusted_proxies`; if the header is missing or ignored, HMD treats the connection as plain HTTP, writes session cookies without `Secure`, and does not send `Strict-Transport-Security`.
-
-Preserve the browser's public **Host** and **Origin** headers. HMD writes the session cookie host-only (no `Domain` attribute) with `SameSite=Lax`, and rejects cookie-authenticated writes whose `Origin` does not equal `server.base_url`. A proxy that rewrites either header breaks login, saving or uploads.
-
-Register `<base_url>/_/auth/oidc/callback` with your identity provider as the redirect URI, and make sure the proxy routes that path to the backend.
+- Terminate TLS and send `X-Forwarded-Proto: https`. HMD ignores it from peers not in `server.trusted_proxies`. Without it, HMD treats the connection as plain HTTP: session cookies lack `Secure` and no `Strict-Transport-Security` header is sent.
+- Preserve the browser's public **Host** and **Origin** headers. HMD rejects cookie-authenticated writes whose `Origin` differs from `server.base_url`, so a proxy that rewrites either header breaks login, saving and uploads.
+- If you use OIDC, register `<base_url>/_/auth/oidc/callback` as the redirect URI and route that path to HMD.
 
 ### Caddy
 
-Caddy preserves the Host header and sets `X-Forwarded-Proto`, `X-Forwarded-For`, and `X-Forwarded-Host` automatically:
+Caddy sets the needed headers automatically:
 
 ```caddyfile
 wiki.example.com {
@@ -50,13 +37,17 @@ wiki.example.com {
 
 Add Caddy's peer address to `server.trusted_proxies`.
 
-### Nginx Proxy Manager (NPM)
+### Nginx Proxy Manager
 
-Create a proxy host for `wiki.example.com`, set the forward hostname to `127.0.0.1` (or the machine running HMD), and the forward port to `8080`. NPM's default proxy config sends `Host` and sets `X-Forwarded-Proto` to the incoming scheme, so TLS terminated at NPM reaches HMD as `https`. Add NPM's peer address to `server.trusted_proxies`.
+1. Create a proxy host for `wiki.example.com`.
+2. Set the forward hostname to `127.0.0.1` (or the machine running HMD) and the forward port to `8080`.
+3. Add NPM's peer address to `server.trusted_proxies`.
+
+NPM's default config already sends `Host` and `X-Forwarded-Proto`.
 
 ### Traefik
 
-Define an entry point with `forwardedHeaders`, list the proxy peer under `trustedIPs`, and keep `insecure: false` so Traefik only forwards the `X-Forwarded-*` headers it accepted from a trusted peer:
+Trust the proxy peer in the entry point and keep `insecure: false`:
 
 ```yaml
 entryPoints:
@@ -67,17 +58,19 @@ entryPoints:
       insecure: false
 ```
 
-Point a router at the HMD backend with this entry point, and list that same network in HMD's `server.trusted_proxies`.
+Point a router at HMD using this entry point, and list the same network in `server.trusted_proxies`.
 
 ## Test
 
-Test login, save, upload, and MCP access **through the proxy** after changing its configuration. Confirm the session cookie is marked `Secure` and that a cookie-authenticated write from a browser succeeds.
+Through the proxy, check login, save, upload and MCP access. Confirm the session cookie is `Secure` and a browser write succeeds.
 
 ## Common pitfalls
 
-- **Logins work but saves fail.** The browser's `Origin` does not match `server.base_url`, or the proxy rewrote the Host. Verify both match the public origin exactly.
-- **HSTS never appears.** HMD did not receive an accepted `X-Forwarded-Proto: https` — the proxy peer is not in `server.trusted_proxies`.
-- **No path-prefix deployments.** HMD serves from the origin root. A `server.base_url` with a path is rejected at configuration load, and every route is mounted at the origin root. Use a dedicated host such as `https://wiki.example.com`, not a proxy prefix such as `https://example.com/hmd/`.
+| Symptom | Cause |
+| --- | --- |
+| Login works, saves fail | Browser `Origin` does not match `server.base_url`, or the proxy rewrote Host. |
+| No HSTS header | HMD did not get an accepted `X-Forwarded-Proto: https`. Add the proxy peer to `server.trusted_proxies`. |
+| Path prefix such as `https://example.com/hmd/` | Unsupported. HMD serves from the origin root and rejects a `base_url` with a path. Use a dedicated host. |
 
 ## Next steps
 

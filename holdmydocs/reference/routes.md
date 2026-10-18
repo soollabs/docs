@@ -3,19 +3,17 @@ title: Route Reference
 tags: hmd, reference
 ---
 
-This page maps HMD's routes, grouped by area, with the HTTP method and authentication requirement for each. Use it to write reverse-proxy rules, health checks, and API clients.
+HMD's routes by area, with method and authentication. Use it for reverse-proxy rules, health checks and API clients.
 
 ## Conventions
 
-Content owns the root. Application routes are reserved under `/_/` — the one top-level segment a namespace may never take. Unknown `/_/` paths never become content pages. OAuth discovery documents additionally use the reserved `/.well-known/` paths listed below when OAuth is enabled.
+Content owns the root. Application routes live under `/_/`, the one top-level segment a namespace may never take. Unknown `/_/` paths never become content pages. OAuth discovery uses `/.well-known/` when OAuth is enabled.
 
-Authentication works in three layers:
+- **None**: reachable without credentials (probes, login, static assets, one-use upload URLs).
+- **Anonymous page**: a page view or attachment is served unauthenticated when the namespace is public, and is identical to a 404 when it is not. Every other request needs a login session or a Bearer personal access token (PAT).
+- **Session or PAT**: a session cookie or `Authorization: Bearer` token. Scopes: `read` for GET/HEAD, `write` for POST/DELETE, `settings` for settings and namespace management, including personal settings. Connected applications is browser-session only. API and MCP auth failures return HTTP 401 with a JSON body, never a login redirect. A PAT restricted to namespaces can only reach paths in those namespaces.
 
-- **None** — reachable without credentials (probes, login, static assets, one-use upload URLs).
-- **Anonymous page** — a plain page view or attachment is served unauthenticated when the namespace is public, and is byte-identical to a 404 when it is not. Every other request needs a login session or a Bearer personal access token (PAT).
-- **Session or PAT** — a session cookie or `Authorization: Bearer` token. Scope requirements: `read` for GET/HEAD, `write` for POST/DELETE, and `settings` for settings and namespace-management operations, including personal settings. Connected applications is a browser-session-only exception. On an API or MCP route an auth failure is HTTP 401 with a JSON body — never a login redirect. A PAT restricted to namespaces can only reach paths that resolve to those namespaces.
-
-OAuth access tokens are another credential for `/_/mcp` only. Refresh tokens are not bearer credentials. OAuth browser consent and connection-management routes require a browser session, not a PAT or OAuth access token; protocol token/revocation endpoints use registered-client authentication instead.
+OAuth access tokens are valid for `/_/mcp` only. Refresh tokens are not bearer credentials. OAuth consent and connection-management routes need a browser session, not a PAT or OAuth token. Token and revocation endpoints use registered-client authentication.
 
 ## Probes and root
 
@@ -45,31 +43,24 @@ OAuth access tokens are another credential for `/_/mcp` only. Refresh tokens are
 
 ## MCP OAuth
 
-These routes are registered only when OAuth is enabled. Browser POSTs require the live session, exact Origin and CSRF token; approving or disconnecting a grant does not require the `write` or `settings` action.
+Registered only when OAuth is enabled. Browser POSTs need the live session, exact Origin and CSRF token. Approving or disconnecting a grant does not need the `write` or `settings` action. See [[MCP OAuth]].
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
 | `GET/HEAD /.well-known/oauth-authorization-server` | None | Authorisation-server metadata. |
 | `GET/HEAD /.well-known/oauth-protected-resource/_/mcp` | None | MCP protected-resource metadata. |
 | `GET/HEAD /.well-known/oauth-protected-resource` | None | Root alias of the same resource document. |
-| `GET /_/oauth/authorize` | Browser session or login continuation | Validate the request and show consent, or continue through login. Once the client's redirect URI is exactly validated, authorisation errors redirect back to the client with `error`, `error_description`, `state` and `iss`; unvalidated client or callback values render an error page and never redirect. |
-| `POST /_/oauth/authorize` | Browser session and CSRF | Approve or deny a bound pending request. |
-| `POST /_/oauth/token` | Registered client | Exchange an authorisation code with S256 PKCE or rotate a refresh token; browser cookies provide no authority. |
+| `GET /_/oauth/authorize` | Browser session or login continuation | Validate the request and show consent, or continue through login. Once the redirect URI is exactly validated, errors redirect back to the client with `error`, `error_description`, `state` and `iss`. Unvalidated client or callback values render an error page and never redirect. |
+| `POST /_/oauth/authorize` | Browser session and CSRF | Approve or deny a pending request. |
+| `POST /_/oauth/token` | Registered client | Exchange an authorisation code (S256 PKCE) or rotate a refresh token. |
 | `POST /_/oauth/revoke` | Registered client | Revoke the client's own grant using an access or refresh token. |
-| `POST /_/oauth/register` | None; DCR must be enabled | Register an MCP client using bounded RFC 7591 JSON metadata. Registration grants no document access. |
-| `GET /_/admin/oauth` | Administrator browser session | List MCP OAuth clients and display the registration form. |
-| `POST /_/admin/oauth` | Administrator browser session and CSRF | Register an MCP client and show its secret once. |
-| `POST /_/admin/oauth/{id}/disable` | Administrator browser session and CSRF | Permanently disable a client and revoke its grants and tokens. |
-| `POST /_/admin/oauth/{id}/delete` | Administrator browser session and CSRF | Delete a disabled client and its associated security records. Active clients are rejected. |
-| `POST /_/admin/oauth/delete-disabled` | Administrator browser session and CSRF | Delete all disabled clients and their associated security records; active clients remain. |
-| `GET /_/connections` | Browser session | List the current user's connections. |
-| `POST /_/connections/{id}/revoke` | Owning browser session and CSRF | Disconnect the user's grant. |
+| `POST /_/oauth/register` | None; DCR must be enabled | Register an MCP client with RFC 7591 JSON metadata. Grants no document access. |
 
-Registered clients use their declared method: `none`, `client_secret_basic` or `client_secret_post`. Public clients still supply their registered client ID; possession of that ID is not proof of identity. See [[MCP OAuth]].
+Clients authenticate with their registered method: `none`, `client_secret_basic` or `client_secret_post`. Public clients still send their client ID.
 
 ## Settings, admin and namespaces
 
-Personal settings, their token and appearance actions, and namespace management require the `settings` scope. Connected applications requires a browser session without administrative access; OAuth client administration requires a settings-capable browser session. See [[Settings And Administration]].
+Personal settings, token and appearance actions, and namespace management need the `settings` scope. Connected applications needs a browser session without administrative access. OAuth client administration needs a settings-capable browser session. See [[Settings And Administration]].
 
 | Route | Method | Purpose |
 | --- | --- | --- |
@@ -99,10 +90,13 @@ Personal settings, their token and appearance actions, and namespace management 
 | `/_/api/settings/tokens/revoke` | POST | Revoke a token. |
 | `/_/api/namespaces` | POST | Save a namespace configuration. |
 | `/_/api/namespaces/reset` | POST | Restore a namespace's default configuration. |
-| `/_/api/namespaces/delete` | POST | Delete a namespace and every file beneath it, including non-empty namespaces. The UI asks for confirmation when files exist. The former `/delete-all` endpoint is removed. |
+| `/_/api/namespaces/delete` | POST | Delete a namespace and every file beneath it. The UI asks for confirmation when files exist. The former `/delete-all` endpoint is removed. |
 | `/_/api/settings/users` | POST | Create a user. |
 | `/_/api/settings/users/scopes` | POST | Change a user's scopes. |
 | `/_/api/settings/setup` | POST | Re-run the setup dialog. |
+| `/_/api/settings/shutdown` | POST | Shut down HMD gracefully. |
+| `/_/api/settings/attachments/migrate` | POST | Move attachments from the old top-level `attachments/` folder into their namespaces. |
+| `/_/api/settings/attachments/delete` | POST | Delete the old-folder attachments of a namespace that no longer exists. |
 | `/_/api/setup` | POST | Complete first-run setup (settings scope). |
 | `/_/api/settings/wiki` | POST | Save `.wiki.yaml` (site name and landing). |
 | `/_/api/settings/help/reset` | POST | Restore the help guide. |
@@ -119,14 +113,12 @@ Personal settings, their token and appearance actions, and namespace management 
 
 ## Hidden pages
 
-Hidden pages are dot-prefixed drafts and templates — app-internal content that is never addressable as a normal page, so it lives under `/_/hidden`.
+Dot-prefixed drafts and templates live under `/_/hidden`. There is no hidden-page POST route.
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
 | `GET /_/hidden` | Read | Hidden page list. |
 | `GET /_/hidden/{path...}` | Read | View or edit (`?do=edit`) a hidden page. |
-
-There is no hidden-page POST route.
 
 ## MCP
 
@@ -134,13 +126,11 @@ There is no hidden-page POST route.
 | --- | --- | --- |
 | `POST /_/mcp` | Any authenticated | MCP JSON-RPC calls; each tool enforces its own scope and namespace rules. |
 
-MCP is stateless: it does not support GET streams or DELETE session teardown. Modern `2026-07-28` requests require the matching version header and per-request protocol/client/capability metadata, and use `server/discover`. Legacy Streamable HTTP clients can negotiate `2025-03-26`, `2025-06-18` or `2025-11-25` through `initialize` without the modern header/metadata requirement. Subsequent legacy requests use the negotiated header, with the specification's absent-header fallback. See [[MCP Integration]].
-
-The tool list and scope map are on [[MCP Tool Reference]].
+MCP is stateless: no GET streams or DELETE session teardown. `2026-07-28` requests need the matching version header and per-request protocol/client/capability metadata, and use `server/discover`. Legacy Streamable HTTP clients can negotiate `2025-03-26`, `2025-06-18` or `2025-11-25` through `initialize` without the modern header or metadata. See [[MCP Integration]] and [[MCP Tool Reference]] for the tool list and scope map.
 
 ## API
 
-All API routes accept a Bearer personal access token — a logged-in session cookie also works. Most return JSON; Markdown preview returns HTML and attachment upload has a one-use capability alternative. See [[API Reference]] for response shapes and worked examples.
+All API routes accept a Bearer PAT or a session cookie. Most return JSON; Markdown preview returns HTML, and attachment upload has a one-use capability alternative. See [[API Reference]] for response shapes and examples.
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
@@ -159,24 +149,19 @@ All API routes accept a Bearer personal access token — a logged-in session coo
 | `POST /_/api/attachments/{slug...}` | Write | Upload an attachment to a page. |
 | `POST /_/api/attachment-uploads/{token}` | None | One-use upload URL created by the MCP `upload_attachment` tool. |
 
-## Attachments
+## Attachments and content
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
-| `GET /_/attachments/{path...}` | Anonymous page | Serve an attachment; public-or-404 by namespace, like page views. |
-
-## Content dispatcher
-
-| Route | Auth | Purpose |
-| --- | --- | --- |
+| `GET /_/attachments/{path...}` | Anonymous page | Serve an attachment; public-or-404 by namespace. |
 | `GET /{path...}` | Anonymous page | Page view, namespace index, or landing. `?do=` actions need a session or PAT. |
 
-GET actions include `edit`, `history`, `diff`, and `rev` (view a past revision). Page changes go through `POST /_/api/pages/*` JSON endpoints, not content POST routes.
+`?do=` actions include `edit`, `history`, `diff` and `rev` (view a past revision). Page changes go through the `POST /_/api/pages/*` endpoints, not content POST routes.
 
 ## Common pitfalls
 
-- Reverse proxies must not rewrite or swallow `/_/` paths — the app and its MCP/API clients depend on them verbatim.
+- Reverse proxies must not rewrite or swallow `/_/` paths.
 - Use `/_/live` or `/_/ready` for unauthenticated load-balancer probes.
-- A restricted PAT that cannot resolve a route to an allowed namespace gets 403 rather than 404, so the caller learns the restriction instead of guessing at a page.
+- A restricted PAT that cannot resolve a route to an allowed namespace gets 403, not 404.
 
 Next: [[API Reference]].
