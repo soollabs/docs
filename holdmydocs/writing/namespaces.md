@@ -3,47 +3,41 @@ title: Namespaces
 tags: hmd, writing
 ---
 
-Namespaces are top-level groups of pages, each with its own visibility, navigation and appearance.
+A namespace is a separate area of the wiki, such as `notes`, `team` or `handbook`. Each has its own pages, navigation, look and visibility. Use one per project or audience.
 
-Every page belongs to exactly one namespace: the first path segment of its slug. In `docs/guides/install`, `docs` is the namespace and `guides` is a folder (the file is `docs/guides/install.md`). Namespaces do not nest.
+The namespace is the first part of a page's address. In `team/guides/onboarding`, `team` is the namespace and `guides` is a folder inside it. Namespaces do not nest.
 
-## Configure a namespace
+## Create a namespace
 
-Add an optional `.namespace.yaml` to the namespace's directory. Every key is optional. Without the file, the namespace is private with the standard widget set.
+1. Open **Settings → Namespaces** and click **New namespace**.
+2. Enter a short name without spaces or slashes, such as `team`.
+3. Save. The namespace is private until you make it public.
 
-| Key | What it does |
+## Change a namespace
+
+Open **Settings → Namespaces** and click **Edit** next to it.
+
+| Section | What you can change |
 | --- | --- |
-| `index` | The page that takes over `/<namespace>/` |
-| `title`, `description` | Display name and description |
-| `public` | Whether anonymous visitors can read the whole namespace |
-| `widgets` | Sidebar widgets for the namespace |
-| `skin`, `palette` | Appearance shown to anonymous visitors of a public namespace |
-| `new` | Quick-create: `template` names the hidden template page, `slug` is the slug pattern for new pages |
-| `tree` | Preferred page order in the namespace tree |
+| General | Description, homepage (**index page**), page order in the sidebar and quick-create template |
+| Published | Whether anyone can read it without signing in, and how it looks to them |
+| Static site | Settings for exporting it as a website, see [[Static Export]] |
+| Widgets | What appears in the sidebar |
 
-The `new` block enables `ctrl-j` quick-create. For example, a daily journal:
+**Reset namespace settings** puts these back to the defaults and keeps every page.
 
-```yaml
-new:
-  template: template
-  slug: '{{.Now.Format "2006-01-02"}}'
-```
+## Public or private
 
-See [[Namespace Configuration Reference]] for every field. If you write `.namespace.yaml` into the repository directly, the instance picks it up on its next sync.
+Visibility covers the whole namespace, never single pages. A public namespace lets anyone read every page and attachment in it without signing in. Keep anything internal in a separate private namespace.
 
-## Manage namespaces
+## Quick-create pages
 
-1. Open `/_/settings/namespaces`. Each row shows name, page count and visibility; click a name to open its index.
-2. Choose **Edit** for General (name, description, index, tree order, quick-create). Published, Static site and Widgets are in the nested navigation.
-3. Use **Reset namespace settings** to remove only `.namespace.yaml` and keep content.
-4. Use **Delete namespace** to remove the namespace and every file beneath it, including pages and hidden templates. The UI asks for confirmation if files exist.
+Give a namespace a quick-create template and `ctrl-j` (`cmd-j` on macOS) opens a new page from it, named automatically. This suits a daily log or meeting notes. Set it under **General**; the template is a hidden page you write once. [[Namespace Configuration Reference]] has the naming patterns.
 
-## Public and private
+## Delete a namespace
 
-Visibility applies to the whole namespace, never per page. With `public: true`, every page, wiki-link and attachment in it is readable anonymously, so keep internal content in a separate private namespace. A private namespace gives anonymous visitors the same response for a missing page and an existing one.
-
-Namespace names are single directory names: no slashes, no leading dot. `_` and `attachments` are reserved.
+**Delete namespace** removes the namespace and every page and file in it. It asks you to confirm first. Deleted pages stay in Git history, but no longer appear in the wiki.
 
 ## Next steps
 
-[[Pages]], [[Namespace Configuration Reference]], [[Settings And Administration]].
+[[Pages]], [[Static Export]], [[Settings And Administration]].

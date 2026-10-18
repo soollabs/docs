@@ -34,7 +34,7 @@ tags: homelab, hardware
 ...
 ```
 
-HMD renders the title above the body, so do not repeat it as a `#` heading. A `pin: true` frontmatter line is honoured by the pinned widget.
+HMD shows the title above the page, so do not repeat it as a `#` heading.
 
 ## Read pages in order
 

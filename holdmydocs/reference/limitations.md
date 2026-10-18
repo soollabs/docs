@@ -10,3 +10,4 @@ tags: hmd, reference
 - Attachment search needs an operator-supplied Apache Tika Server and only covers formats Tika can extract.
 - Static exports have browser-local page search only: no search filters or attachment-content search. They exclude editing, accounts and history.
 - Bidirectional sync only fast-forwards. Resolve divergent Git histories outside HMD before resuming writes.
+- Passwords cannot be changed and users cannot be removed from HMD. The least access a user can have is `read`.

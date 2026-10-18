@@ -3,52 +3,40 @@ title: Attachments
 tags: hmd, writing
 ---
 
-Upload files and images to a page.
+Add images and files to a page.
 
-## Upload a file
+## Add a file
 
 1. Open the page in the editor.
-2. Click **attach** in the toolbar and choose a file, or paste or drag an image into the editor. Pasting and dragging are image-only. The button offers images and common office documents, but the server accepts any file.
-3. The link is inserted at the cursor: `![file](url)` for an image, `[file](url)` for anything else.
+2. Click **attach** and choose a file. You can also paste or drag an image straight into the editor.
+3. HMD uploads the file and inserts a link where your cursor is. Images show on the page; other files are offered as downloads.
 
    ![An uploaded walking-route image linked in the editor](/_/attachments/holdmydocs/writing/attachments/upload.png)
 
-4. Save the page. Uploading does not save it.
+4. Save the page. Uploading does not save it for you.
 
-## Where attachments live
+## Good to know
 
-A page slug is its address without a leading slash or `.md`, such as `notes/inbox`; see [[HMD Concepts]].
+- Files can be up to 10 MiB unless your administrator changed the limit.
+- PNG, JPEG, GIF and WebP images display on the page. Everything else, including SVG and HTML, downloads instead.
+- An attachment belongs to its page and has the same visibility: anyone who can read the page can open the file.
+- Renaming or moving a page leaves its attachments where they were; existing links keep working.
+- Each upload is saved in the page's history.
 
-- Stored at `<namespace>/.attachments/<page>/<file>` in the content repository and served at `/_/attachments/<page-slug>/<file>`.
-- Each upload is a commit, so attachments share the page's Git history.
-- Filenames are sanitised: the base name is kept, the name part is slugified and the extension is lower-cased. There is no extension allowlist.
-- The default maximum upload size is 10 MiB. An administrator can change it.
-- Renaming a page does not move its attachments. They keep the slug they were uploaded under.
+## Search inside files
 
-## Move old attachments
+Search covers the text of `.txt` and `.md` attachments. PDF, Word and other documents are searchable only if your administrator has turned on document search (**Settings → Document search**, see [[Configuration]]). Otherwise they are stored but not searched.
 
-Earlier versions kept attachments in a top-level `attachments/` folder. HMD still serves them and shows administrators a banner until they are moved.
+## Move attachments from older versions
 
-1. Update every HMD instance that uses the repository. Older versions only look in the old folder.
-2. Open **Settings → Wiki**. It lists each namespace that still has files there, with a count.
-3. Click **Move attachments**. This moves them into their namespaces in one commit. URLs do not change.
+Older versions of HMD kept attachments in one shared folder. If yours did, administrators see a banner until the files are moved.
 
-Files of a deleted namespace cannot be moved. Delete them from the same list. They stay in Git history.
+1. Update every HMD instance that uses this wiki's content first.
+2. Open **Settings → Wiki**, which lists each namespace with files to move.
+3. Click **Move attachments**. Links do not change.
 
-## Inline rendering
-
-Only PNG, JPEG, GIF and WebP render inline. Every other type is sent as a download with a `nosniff` header, so uploaded HTML or SVG never executes in the wiki.
-
-## Search and extraction
-
-- Plain UTF-8 `.txt` and `.md` uploads always get cached text extraction (a sidecar file), so MCP and attachment search can read them.
-- For PDF, Word, spreadsheets and similar, set `document_search.tika_url` to a private Apache Tika endpoint on the Document search settings page, or override it with `HMD_DOCUMENT_SEARCH_TIKA_URL`, then restart. HMD then indexes their text for keyword and semantic search.
-- Without Tika, those files are stored but not indexed.
-
-## Access control
-
-Attachments follow their page's namespace access policy. Public namespaces are readable anonymously. Private ones require authentication, and an anonymous visitor gets the same result as for a missing attachment.
+Files belonging to a namespace that has since been deleted cannot be moved; delete them from the same list.
 
 ## Next steps
 
-[[Pages]], [[Markdown And The Editor]], [[MCP Integration]].
+[[Pages]], [[Markdown And The Editor]], [[Links And Navigation]].

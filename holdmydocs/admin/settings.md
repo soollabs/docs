@@ -19,7 +19,6 @@ Settings live at `/_/settings/<section>`. Each panel has its own shareable URL, 
 - Personal, instance, namespace and OAuth client settings need the `settings` (administrative) scope.
 - Connected applications need a signed-in browser session, not administrative access. A bearer token cannot access either OAuth browser section.
 - Connected applications and MCP OAuth clients appear only when OAuth is enabled. Environment overrides is under Advanced.
-- Navigation and panel selection work without JavaScript. Saving needs it, and keeps the selected section open.
 
 ## Personal settings
 
@@ -41,7 +40,7 @@ The system sections write `config.yaml`; see [[Configuration]].
 - **OIDC single sign-on**: non-secret identity-provider configuration.
 - **Document search**: Tika endpoint, model and storage directories.
 - **Wiki**: site name, landing destination, re-run setup.
-- **Users**: the bootstrap admin and per-user scopes. Changing a user's scopes or password revokes their active sessions immediately.
+- **Users**: add users and change their scopes; see [[Authentication And Access]].
 - **Environment overrides**: effective `HMD_*` overrides and configuration export. Export writes non-secret file settings only.
 
 ![Server settings with info icons](/_/attachments/holdmydocs/admin/settings/server.png)

@@ -3,27 +3,24 @@ title: Upgrade HMD
 tags: hmd, getting-started, operations
 ---
 
-Upgrade one release at a time unless the release notes say otherwise. Test reverse-proxy, OIDC or storage changes on a restored staging copy first. When building from source, use the Go version in the target release's `go.mod`.
+Back up before every upgrade, and read the release notes for anything you need to change.
 
 ## Upgrade
 
-1. Read the release notes and pin the target image digest or binary checksum.
-2. Back up `repo`, `app` and external secret files. Confirm the Git remote has the current local commit.
-3. Stop HMD cleanly.
-4. Update it:
-   - Compose install from [[Install HMD]]: pull the pinned image or rebuild the pinned source revision, then run `docker compose -f compose.local.yaml up -d`. Use the same Compose file for every command. `pull` alone does not update a service configured with `build: .`.
-   - Binary: replace it atomically while stopped.
-5. Start HMD with the same data paths and service account. Do not change ownership of old root-owned volumes; restore into fresh volumes owned by UID/GID 65532.
-6. Check the logs, `/_/ready`, local login, OIDC login, a page save, an attachment download, sync status and static export.
-
-Compare your configuration with [[Configuration Reference]] first. HMD does not migrate configuration files or environment variables. Supply secrets through environment variables or secret files, not `config.yaml`.
+1. Read the [release notes](https://github.com/soollabs/holdmydocs/releases) for the target release.
+2. Stop HMD and back it up ([[Storage And Recovery]]).
+3. Check the release notes for settings that changed, and update your configuration to match.
+4. Update it the same way you installed it ([[Install HMD]]):
+   - Release binary: download and verify the new release as in install step 1, then replace your `hmd` with it. For a service install: `sudo install -m 755 hmd /usr/local/bin/hmd`.
+   - Docker Compose: change the tag in `image: ghcr.io/soollabs/holdmydocs:<tag>`, then run `docker compose -f compose.local.yaml pull` and `docker compose -f compose.local.yaml up -d`.
+   - From source: `git checkout <tag>`, then rebuild with the Go version in that tag's `go.mod`.
+5. Start HMD with the same data folders.
+6. Sign in, open and save a page, and check the status bar shows sync is working.
 
 ## Roll back
 
-- If the new version failed before writing data, stop it and redeploy the previous pinned artefact with the unchanged data directories.
-- If it has written commits, keep the repository and investigate before rolling back.
-- Never use `git reset --hard` on the live repository to roll back.
-
-Then repeat the step 6 checks.
+- If the new version will not start, put the previous `hmd` binary or image tag back and start it with the same data folders.
+- If it started and people saved pages, restore your backup instead, or keep the new version and fix the problem: going back loses those saves.
+- Never run `git reset --hard` on the live repository.
 
 See [[Storage And Recovery]] and [[Troubleshooting]].

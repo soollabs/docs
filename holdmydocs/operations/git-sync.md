@@ -24,34 +24,26 @@ Set the mode in `config.yaml` (`git.sync_mode`) or at `/_/settings/git`, which a
 
 See [[Configuration]].
 
-## Read-only browsing
+## Read-only mirror
 
-To browse the official documentation locally:
+Read-only mode serves a Git repository without allowing any changes, for example to browse the official documentation locally:
 
-1. Start HMD:
+```sh
+mkdir -p -m 700 hmd-docs
+HMD_SERVER_BIND=127.0.0.1:8080 \
+HMD_APP_DIR=hmd-docs/app \
+HMD_SERVER_REPO_DIR=hmd-docs/repo \
+HMD_SERVER_READ_ONLY=true \
+HMD_GIT_REMOTE_URL=https://github.com/soollabs/docs.git \
+./hmd
+```
 
-   ```sh
-   hmd_state="$(mktemp -d)"
-   HMD_SERVER_BIND=127.0.0.1:8080 \
-   HMD_APP_DIR="$hmd_state/app" \
-   HMD_SERVER_REPO_DIR="$hmd_state/repo" \
-   HMD_SERVER_READ_ONLY=true \
-   HMD_GIT_REMOTE_URL=https://github.com/soollabs/docs.git \
-   hmd
-   ```
+Then open <http://127.0.0.1:8080/holdmydocs/>.
 
-2. Open `http://127.0.0.1:8080/holdmydocs/`.
-
-HMD clones the public repository without a GitHub token or bootstrap account and skips setup. Keep the state directory to reuse the clone, and stop HMD before deleting it.
-
-- Read-only mode blocks content edits, uploads, setup, administrator operations and pushes, even for administrators.
-- It fetches and fast-forwards in the background every `git.sync_poll_ms` (10 seconds by default), regardless of `git.sync_mode`. Reload the page to see updates.
-- A failed fetch keeps the last local snapshot. Divergent histories are not merged, and uncommitted local changes are never discarded.
-- A reused checkout's `origin` must match the configured URL. Use a fresh `server.repo_dir` for a different remote.
-- For an existing local Git repository, set `HMD_SERVER_REPO_DIR` to its private checkout and omit `HMD_GIT_REMOTE_URL`. HMD then neither fetches nor pushes.
-- A blank repository needs normal writable setup first. Read-only mode does not initialise it.
-- Both the app directory and the repo directory need private, writable local storage.
-- Private Git repositories need credentials, and private HMD namespaces need an authorised HMD account.
+- No account or token is needed for a public repository. Private repositories need a Git token, and private namespaces still need a sign-in.
+- Nobody can edit, upload or change settings, administrators included.
+- HMD fetches updates every 10 seconds. Reload the page to see them.
+- Keep `hmd-docs` to reuse the download next time. Use a new folder for a different repository.
 
 ## Push failures
 

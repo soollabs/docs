@@ -35,18 +35,6 @@ The setup screen shows only what is missing: an existing namespace selector, a *
 
 To reopen setup, go to **Settings → Wiki** at `/_/settings/wiki`. Skipping setup creates nothing.
 
-## Files setup can create
-
-You do not need to edit files. In the content repository, setup can create:
-
-- `.wiki.yaml`: site name and default landing destination.
-- `notes/.namespace.yaml`: namespace settings, including its welcome page index.
-- `notes/readme.md`: the welcome page.
-- `readme.md`: an introduction for the Git repository's front page, not a wiki page.
-- `.help.md`: the hidden in-app help guide, if selected.
-
-Dotfiles are hidden by default; run `ls -a` to see them. Wiki and namespace settings travel with the content repository. Application settings and accounts stay in the separate application-state directory; see [[Configuration]].
-
-To browse the official documentation without a GitHub token, follow the read-only example in [[Git Sync]].
+Setup writes the site name and the new namespace into the wiki's content, so they travel with your pages if you move them.
 
 Next: [[Your First Wiki]]. For the terms used here, see [[HMD Concepts]].

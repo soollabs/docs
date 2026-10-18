@@ -31,13 +31,13 @@ HMD is a trusted-editor wiki. It protects the service boundary but does not sani
 - Back up content and app state, and restrict backup access.
 - Restoring an older OAuth snapshot can bring back credentials revoked or rotated since. Before exposing a recovered service, disable the restored client registrations and require new registrations and fresh consent. See [[MCP OAuth]] and [[Storage And Recovery]].
 
-## Residual risks
+## Known risks
 
-| Risk | Mitigation | Owner and review |
-| --- | --- | --- |
-| Trusted editors can publish unsafe raw HTML. | Limit writers; keep sensitive namespaces private. | Operator, review 2027-08-14 |
-| Tika parsers process hostile documents. | Keep Tika private and separately sandboxed with parser-specific limits; HMD's request and output bounds do not sandbox parsers. | Operator, review 2027-08-14 |
-| External OIDC, Git and model services can fail or be compromised. | Pin configuration, use TLS, monitor failures, keep local backups. | Operator, review 2027-08-14 |
-| Static export has no runtime access control. | Export only namespaces intended for publication. | Operator, review 2027-08-14 |
+| Risk | What to do |
+| --- | --- |
+| Anyone with write access can publish raw HTML. | Limit writers, especially on public namespaces. |
+| Document search sends uploaded files to Tika, which parses untrusted content. | Run Tika privately, with resource limits. |
+| Sign-in, Git hosting and model downloads depend on outside services. | Use HTTPS, watch for failures and keep local backups. |
+| A static export has no access control. | Export only namespaces meant to be public. |
 
 See [[Authentication And Access]], [[Reverse Proxies]], and [[Storage And Recovery]].

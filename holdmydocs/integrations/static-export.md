@@ -8,10 +8,10 @@ Turn a namespace into a self-contained static website you can host anywhere, wit
 ## Prerequisites
 
 - A namespace with at least one page. The export action only appears then.
-- A publishing URL in **Edit → Static site → export base URL**, such as `https://docs.example.org/`. Save it before previewing or exporting. If it is missing, the browser asks before using the main HMD URL for that download or preview, and does not save the fallback.
-- Optional: a namespace `index` setting pointing to an existing page, to make it the homepage. Without it, the homepage asks readers to pick a page from the sidebar. See [[Namespace Configuration Reference]].
+- The address the site will be published at, set in **Edit → Static site → export base URL**, for example `https://docs.example.org/`.
+- Optional: a homepage, set in **Edit → General → index page**. Without one, visitors start on a page that asks them to pick from the sidebar.
 
-> The archive is publishable content, not an access-controlled backup. The static host does not inherit HMD accounts or namespace permissions. Review every page and attachment before making it public.
+> Everything in the namespace becomes public, including attachments no page links to. HMD sign-in does not protect an exported site.
 
 ## Export a namespace
 
@@ -61,28 +61,28 @@ Save the Static site settings, then choose **Preview** to open a snapshot in a n
 
 | Setting | Behaviour |
 | --- | --- |
-| Sitemap | `sitemap.xml`, enabled by default. Turning it off removes an existing sitemap from reused output. |
-| Bots | `robots.txt` blocks all bots by default. Allow a list of named bots, or a single `*` for every bot. `*` cannot be combined with names. |
-| Sidebar links | One shared Text or Icons mode. Links placed **Before search** need an icon and are icon-only; the label stays as the accessible name and tooltip. |
+| Sitemap | A `sitemap.xml` for search engines. On by default. |
+| Search bots | Blocked by default. Tick the bots to allow, or enter `*` in **custom bots** to allow all. Bots treat this as a request, not a lock. |
+| External links | Extra links in the sidebar or top bar, shown as text or icons. |
 
-- Bot rules are voluntary, not access control, and only work at a domain root. Under a path prefix, merge them into the host's root `robots.txt`.
-- Selected Font Awesome 6.7.2 SVG icons are downloaded during generation and bundled with attribution, so no icon CDN is needed when viewing. Generation needs network access only when icons are selected, and fails if an icon cannot be retrieved safely.
-- `robots.txt` and `sitemap.xml` are reserved as first page path segments in any letter case, including descendants such as `robots.txt/guide`. HMD rejects these paths before writing the export. Nested names such as `guides/robots.txt` are allowed.
-- Other stale files remain in reused output, so publish from a clean directory.
+The site uses the namespace's look and page order, without editing controls.
 
-Each page becomes `slug/index.html`. The configured namespace index is also rendered at the root as `index.html`. The export uses the namespace's skin, palette and ordered page tree, with a read-only layout.
+- **Links** between pages in the namespace keep working. Links to pages in other namespaces become plain text, so use wiki-links between your docs pages.
+- **Attachments** are all included, even ones no page links to.
+- **Search** works in the browser with **Search docs** or **Ctrl+K** (**Cmd+K** on macOS). It covers page text, not attachments.
+- **Left out:** hidden pages, editing, sign-in, history and backlinks.
+- The site works at the root of a domain, under a folder such as `/docs/`, or from a local folder.
 
-- **Wiki-links within the namespace** become relative links. Missing targets and targets outside the namespace become plain text.
-- **Navigation and bundled assets** use relative paths, so the site works at a domain root, under a prefix such as `/hmd/`, or locally.
-- **Attachments** are all copied into `attachments/`, and `/_/attachments/{namespace}/` references are rewritten to match. This includes files no page links to, so review them all.
-- **Ordinary Markdown links and external resources** are not generally rewritten. A link to a live HMD route still points to that route, and a remote image still needs network access. Prefer wiki-links between documentation pages.
-- **Search** is browser-local over page titles and text. Click **Search docs** or press **Ctrl+K** (**Cmd+K** on macOS). It needs no server, sends no queries anywhere, and does not search attachments or offer the live wiki's filters.
-- **Not exported:** hidden pages, editing, authentication, page history, backlinks and health reports.
-- **JavaScript** adds code-copy buttons and Mermaid diagrams. Reading pages and following links work without it.
+## Before you publish
+
+1. Export into an empty folder. Reusing an old export can leave deleted pages online.
+2. Preview it locally from the unpacked folder with `python3 -m http.server 8000`, then open <http://127.0.0.1:8000/>.
+3. Click through the homepage, a few pages, images and downloads.
+4. Upload the whole folder, replacing the previous copy. Keep the previous export in case you need to roll back.
 
 ## Command-line export
 
-The CLI uses the configured content repository and inherits the namespace's export settings. Flags override them for this export without changing `.namespace.yaml`:
+For automated publishing, run the export from the command line. It uses the namespace's settings; flags override them for one run:
 
 ```sh
 hmd -export-namespace holdmydocs -export-dir ./site \
@@ -92,27 +92,7 @@ hmd -export-namespace holdmydocs -export-dir ./site \
   -export-links '[{"label":"GitHub","url":"https://github.com/soollabs/holdmydocs","icon":"fa-brands fa-github","location":"topbar","icon_only":true}]'
 ```
 
-- Disable the sitemap with `-export-sitemap=false`.
-- Clear permitted bots with `-export-robots-allow ''`.
-- Clear external links with `-export-links '[]'`.
-
-A publishing URL is required even with the sitemap disabled. If neither namespace settings nor flags provide one, the export fails before creating output; it does not prompt or fall back to the main HMD URL. Pass `-export-use-main-base-url` to use `server.base_url` explicitly. It cannot be combined with `-export-base-url`.
-
-## Publication checklist
-
-1. Export into a clean directory. Never merge into an older export: deleted pages and attachments could stay public.
-2. Check the root homepage and a deeply nested page. Follow the site title, sidebar links, wiki-links and attachment links from both.
-3. Check narrow and wide layouts, the outline, code blocks, images, Mermaid diagrams, keyboard navigation and link focus.
-4. Preview over HTTP, not `file://`. From the unpacked directory:
-
-   ```sh
-   python3 -m http.server 8000 --bind 127.0.0.1
-   ```
-
-   Open `http://127.0.0.1:8000/`. If publishing under `/hmd/`, also preview at that prefix by serving a parent directory containing the export as `hmd/`.
-5. In the browser's network panel, check for requests to the live application's `/_/` routes and for missing assets. Review external links separately.
-6. Publish the complete directory, including fonts, scripts and attachments. Configure the host to serve directory `index.html` files. Keep the previous export for rollback and replace the published snapshot rather than leaving stale files.
-7. Recheck the public homepage, a nested page and an attachment.
+`-export-sitemap=false` turns off the sitemap, `-export-robots-allow ''` blocks all bots and `-export-links '[]'` removes external links. The export needs a publishing address, from the namespace settings or `-export-base-url`.
 
 ## Common pitfalls
 

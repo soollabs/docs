@@ -11,8 +11,15 @@ Accounts, scopes, tokens, OAuth, OIDC and browser write protections.
 2. Use a password of 12–72 bytes with no control characters. Common placeholders and the user name are rejected.
 3. Remove both variables after that first start.
 
-- Scopes are `read`, `write` and `settings`. `settings` grants administrative access.
-- Manage users and scopes at `/_/settings/users`. Changing a user's scopes or password revokes their sessions.
+- Scopes are `read` (view pages), `write` (edit pages) and `settings` (administrator).
+
+### Add a user
+
+1. Open **Settings → Users**.
+2. Enter a username and a password of at least 12 characters, and tick their scopes.
+3. Click **Create user**, then give them the password.
+
+You can change a user's scopes later in the same list; this signs them out. HMD cannot yet change a password, remove a user or take away all access: the least a user can have is `read`. For other sign-in options, use OIDC below.
 - Sessions expire after 30 days. A new login replaces the user's previous session. Log out to revoke the current one immediately.
 - Local login throttles repeated failures by source and user.
 
@@ -59,9 +66,8 @@ OIDC is disabled until `oidc.issuer` is set. It also needs a client ID, a client
 
 ![A fictional OIDC sign-in button below local login](/_/attachments/holdmydocs/operations/authentication/oidc-login.png)
 
-## Browser requests
+## Who can write
 
-- Cookie-authenticated writes need an exact `Origin` match and a session-bound CSRF token. Bearer-token requests use their token instead.
-- Raw HTML in page bodies is trusted editor content, and a public page serves it verbatim. Only publish namespaces whose writers you trust.
+Anyone with `write` can put raw HTML in a page, and a public namespace shows it to every visitor. Only give `write` on public namespaces to people you trust.
 
 See [[Reverse Proxies]] before serving HMD through TLS termination.
