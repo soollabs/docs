@@ -3,53 +3,51 @@ title: Attachments
 tags: hmd, writing
 ---
 
-Upload files and images to a page, and control how they are stored, served and searched.
+Upload files and images to a page.
 
 ## Upload a file
 
 1. Open the page in the editor.
+2. Click **attach** in the toolbar and choose a file, or paste or drag an image into the editor. Pasting and dragging are image-only. The button offers images and common office documents, but the server accepts any file.
+3. The link is inserted at the cursor: `![file](url)` for an image, `[file](url)` for anything else.
 
-2. Click **attach** in the toolbar and choose a file, or paste or drag an image straight into the editor.
+   ![An uploaded walking-route image linked in the editor](/_/attachments/holdmydocs/writing/attachments/upload.png)
 
-   Pasting and dragging are image-only. The attachment button accepts images and common office documents, and the server accepts any file.
-
-3. The upload inserts the link at the cursor: `![file](url)` for an image, `[file](url)` for anything else.
-
-   You should now see the markdown link in the editor and, for an image, the rendered image in the preview:
-
-   ![An image link and its walking-route preview in the editor](/_/attachments/holdmydocs/writing/attachments/upload.png)
-
-4. Save the page.
+4. Save the page. Uploading does not save it.
 
 ## Where attachments live
 
 A page slug is its address without a leading slash or `.md`, such as `notes/inbox`; see [[HMD Concepts]].
 
-HMD stores the file at `attachments/<page-slug>/<file>` in the content repository and serves it at `/_/attachments/<page-slug>/<file>`. Uploading is itself a commit, so attachments share the page's Git history.
+- Stored at `<namespace>/.attachments/<page>/<file>` in the content repository and served at `/_/attachments/<page-slug>/<file>`.
+- Each upload is a commit, so attachments share the page's Git history.
+- Filenames are sanitised: the base name is kept, the name part is slugified and the extension is lower-cased. There is no extension allowlist.
+- The default maximum upload size is 10 MiB. An administrator can change it.
+- Renaming a page does not move its attachments. They keep the slug they were uploaded under.
 
-Filenames are sanitised on upload: the base name is kept, the name part is slugified and the extension is lower-cased. There is no extension allowlist. The default maximum upload size is 10 MiB, configurable by an administrator.
+## Move old attachments
 
-## Inline rendering and safety
+Earlier versions kept attachments in a top-level `attachments/` folder. HMD still serves them and shows administrators a banner until they are moved.
 
-Only PNG, JPEG, GIF and WebP render inline. Every other type is sent with a download disposition and a `nosniff` header, so an uploaded HTML, SVG or other active file never executes in the wiki. This is deliberate: attachments are content, not trusted code.
+1. Update every HMD instance that uses the repository. Older versions only look in the old folder.
+2. Open **Settings → Wiki**. It lists each namespace that still has files there, with a count.
+3. Click **Move attachments**. This moves them into their namespaces in one commit. URLs do not change.
+
+Files of a deleted namespace cannot be moved. Delete them from the same list. They stay in Git history.
+
+## Inline rendering
+
+Only PNG, JPEG, GIF and WebP render inline. Every other type is sent as a download with a `nosniff` header, so uploaded HTML or SVG never executes in the wiki.
 
 ## Search and extraction
 
-Plain UTF-8 `.txt` and `.md` uploads always get cached text extraction, so their content is readable through MCP and by attachment search.
-
-A sidecar is a separate file that caches an attachment's extracted text. HMD creates it when you upload the document.
-
-For other document formats (PDF, Word, spreadsheets and similar), set `document_search.tika_url` to a private Apache Tika endpoint on the Document search settings page or override it with `HMD_DOCUMENT_SEARCH_TIKA_URL`, then restart. With Tika configured, HMD extracts text from those formats and indexes it for keyword and semantic search. Without it, non-text attachments remain ordinary Git-backed files with no indexed content.
+- Plain UTF-8 `.txt` and `.md` uploads always get cached text extraction (a sidecar file), so MCP and attachment search can read them.
+- For PDF, Word, spreadsheets and similar, set `document_search.tika_url` to a private Apache Tika endpoint on the Document search settings page, or override it with `HMD_DOCUMENT_SEARCH_TIKA_URL`, then restart. HMD then indexes their text for keyword and semantic search.
+- Without Tika, those files are stored but not indexed.
 
 ## Access control
 
-Attachments follow their page's namespace access policy. Attachments in a public namespace are readable anonymously; attachments in a private namespace require authentication. A missing attachment and a private one return the same result to an anonymous visitor.
-
-## Common pitfalls
-
-- Pasting and dragging only upload images. Use the **attach** button for other file types.
-- An upload inserts a link but does not save the page. Save afterwards to commit the page's reference to the file.
-- Renaming a page does not move its attachments. The attachment path keeps the slug it was uploaded under.
+Attachments follow their page's namespace access policy. Public namespaces are readable anonymously. Private ones require authentication, and an anonymous visitor gets the same result as for a missing attachment.
 
 ## Next steps
 

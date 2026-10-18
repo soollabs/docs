@@ -3,44 +3,65 @@ title: Authentication And Access
 tags: hmd, operations, security
 ---
 
-This page covers accounts, scopes, sessions, personal access tokens, MCP OAuth, login throttling, OIDC, and the request-level protections on browser writes.
+Accounts, scopes, tokens, OAuth, OIDC and browser write protections.
 
 ## Accounts and scopes
 
-The first local account is created from `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD` when `users.json` does not exist. Bootstrap passwords must be 12–72 bytes, contain no control characters, and cannot be common placeholders or the user name. Remove the bootstrap variables after that first start.
+1. On first start, with no `users.json`, HMD creates the first account from `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD`.
+2. Use a password of 12–72 bytes with no control characters. Common placeholders and the user name are rejected.
+3. Remove both variables after that first start.
 
-Users have explicit `read`, `write`, and `settings` scopes. `settings` grants administrative access. Manage users and scopes at `/_/settings/users`; scope or password changes revoke that user's active sessions. Sessions are server-side, expire after 30 days, and each new login replaces the user's prior session. Log out to revoke the current session immediately.
+- Scopes are `read`, `write` and `settings`. `settings` grants administrative access.
+- Manage users and scopes at `/_/settings/users`. Changing a user's scopes or password revokes their sessions.
+- Sessions expire after 30 days. A new login replaces the user's previous session. Log out to revoke the current one immediately.
+- Local login throttles repeated failures by source and user.
 
-Local login throttles repeated failures by source and user, and only four bcrypt checks run at once. A login failure intentionally gives no account-specific detail.
-
-## Personal access tokens
-
-Use personal access tokens (PATs) for scripts and MCP, never browser cookies. Tokens have a label, expiry, explicit scopes, and an optional namespace allowlist. Their value is shown once; HMD stores only a SHA-256 digest. Revoke a suspected token at `/_/settings/access-tokens` by its label. Changing a user's scopes also limits its tokens on the next request. See [[Personal Access Tokens]].
-
-![Personal token management without exposing a token value](/_/attachments/holdmydocs/admin/personal-access-tokens/tokens.png)
-
-Per-user preferences such as skin, palette, and fonts are stored against the account in `users.json` and edited at `/_/settings/appearance`:
+Skin, palette and font preferences are stored per account in `users.json` and edited at `/_/settings/appearance`:
 
 ![Personal appearance preferences](/_/attachments/holdmydocs/operations/authentication/preferences.png)
 
+## Personal access tokens
+
+Use personal access tokens (PATs) for scripts and MCP, never browser cookies. See [[Personal Access Tokens]].
+
+- Each token has a label, an expiry, explicit scopes and an optional namespace allowlist.
+- The value is shown once. HMD stores only a SHA-256 digest.
+- Revoke a token by label at `/_/settings/access-tokens`.
+- Changing a user's scopes also limits their tokens from the next request.
+
+![Personal token management without exposing a token value](/_/attachments/holdmydocs/admin/personal-access-tokens/tokens.png)
+
 ## MCP OAuth
 
-OAuth is an opt-in alternative to PATs for MCP clients. Users sign in with the normal local form or configured OIDC provider, then approve the client's requested actions and namespace access. They can review and disconnect grants at `/_/connections`; this revokes the grant's access and refresh tokens.
+OAuth is an opt-in alternative to PATs for MCP clients. Setup, client provisioning, backup and recovery are in [[MCP OAuth]].
 
-OAuth access tokens are not PATs: they authenticate only `/_/mcp`, not browser pages or other API routes. Refresh tokens never authenticate MCP requests; clients send them to `/_/oauth/token` to obtain a new access/refresh pair. Refresh tokens rotate on use; reuse of an old refresh token revokes its token family. Authorisation codes are single use; replaying a consumed code revokes the credentials derived from it. Clients must serialise token requests. Either token can be submitted to the RFC 7009 revocation endpoint at `/_/oauth/revoke`. See [[MCP OAuth]] for setup, client provisioning, backup and recovery.
+- Users sign in with the local form or OIDC, then approve the client's actions and namespace access.
+- Review and disconnect grants at `/_/settings/connections`. Disconnecting revokes the grant's access and refresh tokens.
+- OAuth access tokens authenticate only `/_/mcp`.
+- Clients exchange refresh tokens at `/_/oauth/token` for a new access/refresh pair. Refresh tokens never authenticate MCP requests.
+- Refresh tokens rotate on use. Reusing an old one revokes its token family.
+- Authorisation codes are single use. Replaying one revokes the credentials derived from it.
+- Clients must serialise token requests.
+- Revoke either token type at `/_/oauth/revoke` (RFC 7009).
 
 ## OIDC
 
-OIDC is disabled until `oidc.issuer` is configured. It requires a client ID, client secret and public HTTPS `server.base_url`. Use `oidc.allowed_subjects` or `oidc.allowed_email_domains` to admit identities in HMD, or explicitly set `oidc.allow_any_authenticated: true` to delegate admission to the identity provider. Register `<server.base_url>/_/auth/oidc/callback` with the provider. Supply the secret with `HMD_OIDC_CLIENT_SECRET` or a private file referenced by `oidc.client_secret_file`; it cannot be edited in the UI, and `oidc.client_secret` in `config.yaml` makes loading fail.
+OIDC is disabled until `oidc.issuer` is set. It also needs a client ID, a client secret and a public HTTPS `server.base_url`.
 
-HMD identifies a user by the verified issuer and subject, not by their display name or email address. An admitted user is provisioned on first login with the configured default scopes. Email-domain admission only accepts verified email claims. OIDC uses state and PKCE cookies; a provider outage prevents OIDC login but does not invalidate existing sessions or local login when it remains enabled.
+1. Register `<server.base_url>/_/auth/oidc/callback` with the provider.
+2. Supply the secret with `HMD_OIDC_CLIENT_SECRET` or a private file named in `oidc.client_secret_file`. It cannot be edited in the UI, and `oidc.client_secret` in `config.yaml` makes loading fail.
+3. Choose who is admitted: `oidc.allowed_subjects`, `oidc.allowed_email_domains`, or `oidc.allow_any_authenticated: true` to leave admission to the provider.
 
-When OIDC is configured, the login page shows the SSO button alongside the password form:
+- Users are identified by verified issuer and subject, not display name or email.
+- Admitted users are provisioned on first login with the configured default scopes.
+- Email-domain admission accepts only verified email claims.
+- A provider outage blocks OIDC login only. Existing sessions and local login (if enabled) keep working.
 
-![A fictional walking-group OIDC sign-in button beside local login](/_/attachments/holdmydocs/operations/authentication/oidc-login.png)
+![A fictional OIDC sign-in button below local login](/_/attachments/holdmydocs/operations/authentication/oidc-login.png)
 
 ## Browser requests
 
-Cookie-authenticated writes require an exact `Origin` match and a session-bound CSRF token. Bearer-token requests use their token instead. Authenticated and login responses are `no-store`. HMD sends CSP nonces for scripts, frame denial, no-sniff, no-referrer, COOP, and a restrictive permissions policy. Raw HTML in page bodies is trusted editor content, so only publish namespaces whose writers you trust: a public page serves its raw HTML verbatim.
+- Cookie-authenticated writes need an exact `Origin` match and a session-bound CSRF token. Bearer-token requests use their token instead.
+- Raw HTML in page bodies is trusted editor content, and a public page serves it verbatim. Only publish namespaces whose writers you trust.
 
 See [[Reverse Proxies]] before serving HMD through TLS termination.

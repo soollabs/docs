@@ -3,39 +3,45 @@ title: MCP OAuth
 tags: hmd, integrations, oauth, mcp
 ---
 
-HMD provides OAuth authentication for MCP clients. OAuth is disabled by default. Personal access tokens work independently.
+HMD can authenticate MCP clients with OAuth. It is off by default. Personal access tokens work independently.
 
 ## Enable OAuth
 
-Set the canonical public origin and enable MCP and OAuth:
+1. Set the public origin and enable MCP and OAuth:
 
-```yaml
-server:
-  base_url: https://wiki.example.com
-mcp:
-  enabled: true
-  oauth:
-    enabled: true
-    allow_admin_delegation: false
-```
+   ```yaml
+   server:
+     base_url: https://wiki.example.com
+   mcp:
+     enabled: true
+     oauth:
+       enabled: true
+       allow_admin_delegation: false
+   ```
 
-Restart HMD after changing configuration. Production deployments require HTTPS. For local development only, `mcp.oauth.allow_insecure_loopback: true` allows an HTTP loopback origin; it does not allow a public HTTP issuer. `server.base_url` is the OAuth issuer, so configure it to the exact origin clients use. Spoofed `Host` and forwarded headers do not change it.
+2. Restart HMD.
 
-OAuth metadata is published at `/.well-known/oauth-authorization-server` and `/.well-known/oauth-protected-resource/_/mcp`. Clients should discover these endpoints. HMD supports the authorisation-code grant with S256 PKCE and the MCP resource indicator. Send the exact MCP resource URI (`<base_url>/_/mcp`) in the authorisation and code-exchange requests. A refresh request may omit the resource to inherit its grant, but a different resource is rejected. Client ID Metadata Documents (CIMD) are not supported.
+- `server.base_url` is the OAuth issuer. Set it to the exact origin clients use.
+- Production requires HTTPS. For local development only, `mcp.oauth.allow_insecure_loopback: true` allows an HTTP loopback origin.
+- Metadata is published at `/.well-known/oauth-authorization-server` and `/.well-known/oauth-protected-resource/_/mcp`.
+- HMD supports the authorisation-code grant with S256 PKCE and the MCP resource indicator. Send the exact resource URI (`<base_url>/_/mcp`) in the authorisation and code-exchange requests.
+- A refresh request may omit the resource to inherit its grant. A different resource is rejected.
+- Client ID Metadata Documents (CIMD) are not supported.
 
 ## Register a client
 
 ### Admin interface
 
-Sign in with an administrator account and open **Admin → Manage MCP OAuth clients** (`/_/admin/oauth`). Enter the MCP client's name, exact callback URLs, authentication method and allowed actions. Copy the generated client ID and secret into the MCP client's OAuth settings. Confidential secrets are shown once. The list includes callback URLs, allowed actions, authentication methods, registration source and disabled status; it never displays secret verifiers.
+1. Sign in as an administrator and open **Settings → MCP OAuth clients** (`/_/settings/oauth-clients`).
+2. Enter the client's name, exact callback URLs, authentication method and allowed actions.
+3. Copy the generated client ID and secret into the MCP client. Confidential secrets are shown once.
 
-Use **Disable client** to permanently disable a registration and revoke its grants and tokens. The interface asks for confirmation first. To replace a secret, register a replacement client, disable the old registration and update the MCP client's credentials.
+- **Disable client** permanently disables a registration and revokes its grants and tokens. To replace a secret, register a new client, disable the old one and update the MCP client.
+- **Delete client** appears on disabled clients. **Delete all disabled** removes every disabled registration. Deletion also removes the client's grants, token families, token records and connection history. Active clients cannot be deleted.
 
-Disabled clients have a **Delete client** button. **Delete all disabled** removes every disabled registration and leaves active clients untouched; both deletion actions ask for confirmation. Deletion removes the client's associated grants, token families and token records, including its connection history. Active clients cannot be deleted; disable them first.
+### Command line
 
-### Local administration
-
-The CLI reads the configured app directory. Stop HMD before running a CLI command that opens its OAuth store. Redirect URIs must be exact; HTTPS is required except for loopback callbacks.
+Stop HMD first: the CLI opens the OAuth store in the configured app directory, so run it on the machine that owns that directory. Redirect URIs must be exact, and HTTPS is required except for loopback callbacks.
 
 ```sh
 hmd \
@@ -46,21 +52,21 @@ hmd \
   -oauth-client-scopes read,write
 ```
 
-Repeat `-oauth-client-redirect-uri` for each callback. Public clients use `none`. Every client must use S256 PKCE, including confidential clients. Confidential clients can use `client_secret_basic` or `client_secret_post`; the secret is printed once. Store it in the client's secret manager. HMD stores only a bcrypt digest of a confidential secret, never its plaintext value.
+- Repeat `-oauth-client-redirect-uri` for each callback.
+- Public clients use `none`. Confidential clients use `client_secret_basic` or `client_secret_post`; the secret is printed once.
+- Every client must use S256 PKCE.
 
-The command reads the normal HMD configuration and app directory. Run it on the machine that owns that app directory, and do not run it while the HMD server is using the OAuth store.
-
-To replace a lost or compromised confidential-client secret, stop HMD, use `-oauth-client-add` to provision a replacement client and permanently disable the old registration, then update the MCP client with the new credentials before restarting HMD:
+To replace a lost or compromised secret, stop HMD, add a replacement client, disable the old one, then update the MCP client before restarting:
 
 ```sh
 hmd -oauth-client-disable -oauth-client-id "hmd_c_..."
 ```
 
-Disabling a client revokes its grants, access tokens and refresh tokens. The disable operation is permanent; users must approve a new connection to the replacement client.
+Disabling is permanent and revokes the client's grants, access tokens and refresh tokens. Users must approve a new connection to the replacement.
 
 ## Dynamic client registration
 
-To let MCP clients register themselves using RFC 7591, enable:
+Enable RFC 7591 registration, then restart HMD:
 
 ```yaml
 oauth:
@@ -68,48 +74,58 @@ oauth:
   dynamic_registration: true
 ```
 
-Restart HMD. Authorisation-server discovery then advertises `registration_endpoint` at `<base_url>/_/oauth/register`. With this option disabled, discovery omits that field and the endpoint returns 404.
+- Discovery then advertises `registration_endpoint` at `<base_url>/_/oauth/register`. When disabled, discovery omits it and the endpoint returns 404.
+- The request is a JSON document with `redirect_uris` and optional `client_name`, `token_endpoint_auth_method`, `scope`, `grant_types` and `response_types`.
+- Defaults: `client_secret_basic`, `read`, authorisation-code flow, `code` response type. Authentication methods: `none`, `client_secret_basic`, `client_secret_post`.
+- Callback URLs get the same exact-match validation as admin registrations. Metadata URLs are not fetched. RFC 7592 self-management is not implemented.
+- Limits: five public registrations per minute across the instance, plus the OAuth per-address limit. At most 32 dynamic clients, within the 256-client total. Disabled registrations count until deleted.
+- DCR clients cannot request `settings`.
 
-Registration accepts a JSON document with `redirect_uris` and optional `client_name`, `token_endpoint_auth_method`, `scope`, `grant_types` and `response_types`. Defaults are `client_secret_basic`, `read`, the authorisation-code flow and the `code` response type. Authentication methods are `none`, `client_secret_basic` and `client_secret_post`. Callback URLs use the same exact-match validation as administrator registrations. Metadata URLs are not fetched. HMD does not implement RFC 7592 client self-management.
+Warning: the limits do not stop an attacker exhausting public registration capacity. Enable DCR only if you accept that, and review and delete unwanted clients in the admin interface.
 
-Public registration is limited to five attempts per minute across the instance, in addition to the OAuth per-address request limit. At most 32 dynamically registered clients are stored, within the overall 256-client limit; disabled registrations count until deleted. These limits reserve capacity for administrator registrations but do not prevent an attacker exhausting public registration capacity. Enable DCR only when that trade-off is acceptable. Review, disable and delete unwanted clients in the admin interface. DCR clients cannot request `settings`.
+Registration grants no document access. Every connection still needs S256 PKCE, user authentication and consent. A dynamically supplied client name is not a verified identity.
 
-Registration does not grant access to documents. Every connection requires S256 PKCE, user authentication and consent. A dynamically supplied client name is not a verified application identity.
+## Consent and scopes
 
-## User consent and scopes
+The user signs in with the local password form or the configured OIDC provider. The consent page shows the client, callback host, account and MCP resource. The user can deny, or approve only some actions and namespaces.
 
-When a client starts authorisation, the user signs in with the local password form or the configured OIDC provider. The user can deny the request or approve only some requested actions and namespaces. The consent page identifies the client, callback host, account and MCP resource.
+| Scope | Permits |
+| --- | --- |
+| `read` | MCP read operations |
+| `write` | Page and attachment writes. Does not imply `read`. |
+| `settings` | Administrative access. Implies read and write. |
 
-- `read` permits MCP read operations.
-- `write` permits page and attachment writes.
-- `settings` grants administrative access. It is disabled by default; enabling `mcp.oauth.allow_admin_delegation` permits it for eligible users and registered clients. **Settings access is unrestricted across all current and future namespaces** and cannot be narrowed by namespace selection.
+- Request `read write` for a client that needs both. See [[MCP Tool Reference]] for the tool-to-scope mapping.
+- `settings` is disabled by default. `mcp.oauth.allow_admin_delegation` permits it for eligible users and registered clients. **Settings access covers all current and future namespaces** and cannot be narrowed.
+- Granted scopes cannot exceed the client's allowed scopes or the user's current permissions. Permissions are rechecked on use and on refresh.
+- Non-administrative grants can be limited to selected namespaces, or the user can approve all namespaces.
 
-Granted scopes cannot exceed either the client's allowed scopes or the user's current HMD permissions. Those permissions are checked again when an OAuth token is used and when it is refreshed. `write` does not imply `read`; request `read write` for a client that needs both. `settings` implies both actions and bypasses namespace restrictions. A non-administrative grant may be limited to selected namespaces, or the user may explicitly approve all namespaces. See [[MCP Tool Reference]] for the tool-to-scope mapping.
+Some MCP applications request only `read` by default. To allow edits, set the application's OAuth scope to `read write`, make sure its HMD registration allows both, and reconnect to approve. Registration sets the maximum; consent cannot add an action the application did not request.
 
-Some MCP applications and services default to requesting only `read`. To enable edits, explicitly configure the application's OAuth scope setting to request `read write`, ensure its HMD registration allows both actions, and reconnect to approve the additional scope. Allowing `write` in HMD's client registration does not make the application request it: registration sets the maximum permissions, and consent cannot add an action absent from the application's request.
+## Tokens and revocation
 
-## Token lifecycle and revocation
+| Credential | Lifetime |
+| --- | --- |
+| Authorisation code | 2 minutes |
+| Access token | 15 minutes |
+| Refresh token | Bound to a 30-day grant family. Refresh does not extend it. |
 
-HMD issues two-minute authorisation codes, 15-minute access tokens and refresh tokens bound to a 30-day grant family. Refresh tokens rotate when used; replaying an old refresh token revokes the surviving family. Replaying a consumed authorisation code also revokes the credentials derived from it. Refresh does not extend the grant-family expiry.
+- Refresh tokens rotate on use. Replaying an old refresh token revokes the surviving family. Replaying a used authorisation code revokes the credentials derived from it.
+- Clients must serialise token requests. Concurrent exchanges of one refresh token count as replay and can revoke the new tokens.
+- Refresh can narrow permissions but cannot restore scopes dropped by an earlier refresh.
+- If a token response is lost, start a new authorisation and consent flow. Do not retry a possibly consumed refresh token or code.
+- Users review and disconnect their own grants at `/_/settings/connections`. Disconnecting immediately revokes the grant's access tokens, refresh tokens and OAuth-derived upload capabilities.
+- Clients can revoke via the RFC 7009 endpoint `/_/oauth/revoke`. Revoking either token revokes the whole grant.
+- Disabling OAuth stops OAuth credentials working but keeps replay and revocation state. Re-enabling does not restore revoked grants.
+- Changing the issuer or resource invalidates grants bound to the old origin.
 
-Clients must serialise token requests. Concurrent exchanges of the same refresh token are replay attempts: even if one succeeds, the duplicate can revoke its newly issued tokens. Refresh can narrow permissions but cannot restore scopes removed from a previous refresh.
+## Storage and backups
 
-If a token response is lost, do not retry a possibly consumed refresh token or assume an authorisation code remains usable. Start a new authorisation and consent flow. HMD does not retain plaintext successor tokens to replay a lost response.
-
-Users can review and disconnect their own grants at `/_/connections`. Disconnect immediately revokes that grant's access tokens, refresh tokens and OAuth-derived upload capabilities. OAuth clients can use the RFC 7009 revocation endpoint at `/_/oauth/revoke`; revoking either token revokes the whole grant. Unknown tokens are handled without revealing whether they exist.
-
-Disabling OAuth prevents OAuth credentials from being used but preserves stored replay and revocation state. Re-enabling OAuth does not restore grants that were already revoked. Changing the configured issuer/resource invalidates grants bound to the previous origin.
-
-## Storage, backups and process model
-
-Client registrations, consent grants, token digests and replay/revocation records live in the private `oauth.json` file under `HMD_APP_DIR`. Plaintext access tokens, refresh tokens, codes and confidential client secrets are not stored there. Treat the file and its backups as sensitive security state nonetheless.
-
-Back up the complete app directory together with the Git repository and configuration, using a filesystem-consistent snapshot or a stopped instance. Include `oauth.json` whenever it exists, even while OAuth is disabled. Restore the OAuth state with the same protected app data; losing it invalidates existing OAuth credentials. Never copy a live `oauth.json` as an ordinary file-level backup while HMD is writing it.
-
-Restoring an older snapshot can restore credentials revoked or rotated after the backup was taken. Before exposing a recovered instance, disable affected restored client registrations, provision replacements and require fresh consent. A restore does not preserve revocation decisions newer than its snapshot.
-
-If replacing the state file succeeds but confirming directory durability fails, HMD reports `OAuth persistence is uncertain; restart required` and rejects OAuth state reads and writes. No successful token response is returned for that failed operation, but its state may already be on disk. Resolve the storage fault, retain `oauth.json`, and restart HMD to reopen the on-disk state. Do not delete the file or keep retrying token requests to clear the error. If an issuance response was lost, obtain new consent after recovery.
-
-The OAuth store is locked to one running HMD process. Multiple replicas or concurrent instances sharing an app directory are not supported. Run one instance for this state store; use a coordinated migration and backup before moving it to another host.
+- OAuth state (registrations, grants, token digests, replay and revocation records) is in the private `oauth.json` under `HMD_APP_DIR`. No plaintext tokens, codes or client secrets are stored, but treat the file and its backups as sensitive.
+- Back up the whole app directory with the Git repository and configuration, using a filesystem-consistent snapshot or a stopped instance. Include `oauth.json` whenever it exists, even with OAuth disabled. Never copy it as a plain file while HMD is writing it.
+- Losing `oauth.json` invalidates existing OAuth credentials.
+- An older snapshot can restore credentials revoked or rotated since. Before exposing a recovered instance, disable the restored client registrations, provision replacements and require fresh consent.
+- If HMD reports `OAuth persistence is uncertain; restart required`, it rejects OAuth state reads and writes. Fix the storage fault, keep `oauth.json`, and restart HMD. Do not delete the file or keep retrying token requests. If an issuance response was lost, get new consent after recovery.
+- The OAuth store is locked to one running HMD process. Multiple instances sharing an app directory are not supported. Back up and migrate in a coordinated way when moving hosts.
 
 See [[MCP Integration]], [[Authentication And Access]], and [[Storage And Recovery]].

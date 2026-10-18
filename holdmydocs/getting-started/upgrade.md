@@ -3,20 +3,27 @@ title: Upgrade HMD
 tags: hmd, getting-started, operations
 ---
 
-Move a running instance to a newer HMD release without losing content, state, or the ability to roll back.
+Upgrade one release at a time unless the release notes say otherwise. Test reverse-proxy, OIDC or storage changes on a restored staging copy first. When building from source, use the Go version in the target release's `go.mod`.
 
-When building from source, use the Go version required by the target release's `go.mod`. Upgrade one release at a time unless the release notes say otherwise. Test reverse-proxy, OIDC, or storage changes in a restored staging copy first.
+## Upgrade
 
 1. Read the release notes and pin the target image digest or binary checksum.
-2. Back up `repo`, `app`, and external secret files. Confirm the Git remote has the current local commit.
-3. Stop HMD cleanly. For the longer-running Compose installation in [[Install HMD]], pull the pinned image or rebuild the pinned source revision, then run `docker compose -f compose.local.yaml up -d`; for a binary, replace it atomically while stopped. Use the same Compose file for every command. `docker compose -f compose.local.yaml pull` alone does not update a service configured with `build: .`.
-4. Start HMD with the same data paths and service account. Do not change old root-owned volume ownership; restore into fresh UID/GID 65532-owned volumes.
-5. Check logs, `/_/ready`, local login, OIDC login, a page save, attachment download, sync status, and static export before declaring the upgrade done.
+2. Back up `repo`, `app` and external secret files. Confirm the Git remote has the current local commit.
+3. Stop HMD cleanly.
+4. Update it:
+   - Compose install from [[Install HMD]]: pull the pinned image or rebuild the pinned source revision, then run `docker compose -f compose.local.yaml up -d`. Use the same Compose file for every command. `pull` alone does not update a service configured with `build: .`.
+   - Binary: replace it atomically while stopped.
+5. Start HMD with the same data paths and service account. Do not change ownership of old root-owned volumes; restore into fresh volumes owned by UID/GID 65532.
+6. Check the logs, `/_/ready`, local login, OIDC login, a page save, an attachment download, sync status and static export.
 
-If the new version fails before writing data, stop it and redeploy the previous pinned artefact with the unchanged data directories. If it has written commits, preserve the repository and investigate before rolling back. Never use `git reset --hard` against the live repository as a rollback method.
+Compare your configuration with [[Configuration Reference]] first. HMD does not migrate configuration files or environment variables. Supply secrets through environment variables or secret files, not `config.yaml`.
 
-After a rollback, run the same readiness, login, page, attachment, and sync checks.
+## Roll back
 
-Compare your configuration with [[Configuration Reference]] before restarting. HMD does not migrate configuration files or environment variables automatically. Supply secrets through their environment variables or secret files, not in `config.yaml`.
+- If the new version failed before writing data, stop it and redeploy the previous pinned artefact with the unchanged data directories.
+- If it has written commits, keep the repository and investigate before rolling back.
+- Never use `git reset --hard` on the live repository to roll back.
+
+Then repeat the step 6 checks.
 
 See [[Storage And Recovery]] and [[Troubleshooting]].

@@ -3,13 +3,13 @@ title: HMD Concepts
 tags: hmd, getting-started
 ---
 
-You only need a few ideas to find your way around HMD. Start with pages and namespaces; Git and publishing can come later.
+Start with pages and namespaces; Git and publishing can come later.
 
-## A wiki contains namespaces; namespaces contain pages
+## Wikis, namespaces and pages
 
-A **wiki** is your whole HMD instance. A **namespace** is a top-level area inside it, such as `notes`, `team`, or `handbook`. Each namespace has its own page tree, appearance, and public or private visibility.
-
-A **page** is one Markdown document. Its **slug** is its path inside the wiki:
+- **Wiki**: your whole HMD instance.
+- **Namespace**: a top-level area such as `notes`, `team` or `handbook`. Each has its own page tree, appearance and public or private visibility.
+- **Page**: one Markdown document. Its **slug** is its path inside the wiki.
 
 ```text
 team/guides/onboarding
@@ -17,46 +17,53 @@ team/guides/onboarding
 └─ namespace
 ```
 
-The page lives at `/team/guides/onboarding` in the browser and is stored as `team/guides/onboarding.md` in the content repository. `guides` is an organising folder, not another namespace.
+This page is served at `/team/guides/onboarding` and stored as `team/guides/onboarding.md` in the content repository. `guides` is a folder, not another namespace.
 
-The page's **title** is the name readers see, such as “Onboarding”. Changing the title does not move the page; changing the path does. See [[Pages]].
+The **title** is the name readers see. Changing the title does not move the page; changing the path does. See [[Pages]].
 
-## Markdown is the content; frontmatter is the metadata
+## Markdown and frontmatter
 
-Markdown is plain text with lightweight formatting: `##` starts a section, `-` starts a list item, and `**text**` makes text bold. HMD's editor shows a live preview beside your source.
+Pages are Markdown. **Frontmatter** is the metadata block at the top of the stored file, holding the title and tags. The editor's title and tags fields manage it, so you never need to write YAML. See [[Markdown And The Editor]].
 
-**Frontmatter** is the small metadata block at the top of a stored Markdown file. It holds values such as the title and tags. The editor's title and tags fields manage those values for you; you do not need to write YAML to create a page. See [[Markdown And The Editor]].
+## Links
 
-## Links connect your knowledge
+- **Wiki-link**: `[[Onboarding]]` points to a page by its title.
+- **Backlink**: lists the pages that link to the page you are reading.
+- **Tags**: label related pages across topics.
+- Use ordinary Markdown links for external sites.
 
-A **wiki-link**, such as `[[Onboarding]]`, points to a page by its title. A **backlink** tells you which other pages link to the page you are reading. Together they let you navigate by subject, not just by folder.
+See [[Links And Navigation]].
 
-Use ordinary Markdown links for external websites. Add **tags** to label related pages across topics. See [[Links And Navigation]].
+## Git
 
-## Git records your changes
+HMD stores content in a local **Git repository**. Each save creates a **commit**, which you can inspect from page history. Writers do not run Git commands.
 
-HMD stores content in a local **Git repository**, a directory that also keeps a history of changes. Saving a page creates a **commit**, a recorded revision you can inspect from page history.
+A **remote** is an optional second repository on a Git host, and HMD pushes commits to it in the background. A saved page is not necessarily pushed yet: a network failure leaves it saved locally only. See [[Git Sync]].
 
-A **remote** is an optional second Git repository on a Git host. HMD can push commits to it in the background. You can use HMD without one, and writers do not need to run Git commands to save pages.
+A remote is not a full backup. Accounts and local settings need backing up too. See [[Storage And Recovery]].
 
-A saved page and a successful remote push are different things. A network failure can leave a page safely saved locally but not yet copied to the remote. See [[Git Sync]]. A remote is not a complete backup of your HMD installation; accounts and local settings need a backup too. See [[Storage And Recovery]].
+## Permissions
 
-## Reading, writing, and administering are separate permissions
+Accounts can read pages, write them, or manage settings, and can be limited to particular namespaces.
 
-An account can have permission to read pages, write them, or manage settings. Access can also be limited to particular namespaces.
+Namespaces are private by default. A **public** namespace lets visitors read its ordinary pages and attachments without signing in, but not edit them. Keep sensitive material in a private namespace. Read [[Authentication And Access]] before sharing access.
 
-Namespaces are private by default. Making one **public** lets visitors read its ordinary pages and attachments without signing in. Public does not mean editable by everyone. Keep sensitive material in a separate private namespace, and read [[Authentication And Access]] before sharing access.
+A **hidden page** is left out of navigation and search. It is not access control, so do not store secrets in one.
 
-A **hidden page** is omitted from ordinary navigation and search. Hidden is a filing convention, not a substitute for permissions or a place to store secrets.
+## Live wiki and static export
 
-## A live wiki and a static site serve different purposes
+The running application provides editing, search, accounts and history. A **static export** is a read-only snapshot of one namespace (HTML, styles, scripts and attachments) that you upload to a file host.
 
-The running HMD application provides editing, search, accounts, and history. A **static export** is a read-only snapshot of one namespace: HTML pages, styles, scripts, and attachments you can upload to a file host.
+- Links within the namespace keep working.
+- Search runs in the browser over exported page text.
+- Editing and history need the live application.
+- Changes appear only after you export and publish again.
+- The file host controls who can read it.
 
-Links within that namespace keep working in the export. Its browser-local search covers exported page text; editing and page history need the live application. Changes appear on the static site only after you export and publish again. Its host, not HMD, controls who can read the copy. See [[Static Export]].
+See [[Static Export]].
 
 ## Next steps
 
-- [[Your First Wiki]] — put these concepts into practice.
-- [[Namespaces]] — choose how to organise your content.
-- [[Running HMD]] — learn what you need to operate an instance.
+- [[Your First Wiki]]: put these concepts into practice.
+- [[Namespaces]]: choose how to organise your content.
+- [[Running HMD]]: what you need to operate an instance.
