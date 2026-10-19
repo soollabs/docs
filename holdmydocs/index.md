@@ -1,5 +1,5 @@
 ---
-title: Self-Hosted Git-Backed Wiki
+title: Hold My Docs
 tags: hmd, documentation
 ---
 
