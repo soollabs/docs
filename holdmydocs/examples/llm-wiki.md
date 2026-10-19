@@ -56,8 +56,8 @@ The `research` namespace is an LLM-maintained knowledge base.
 ## Ingest procedure
 
 1. Create `research/inbox` if it does not exist.
-2. Upload the document with `upload_attachment`, then add the returned attachment URL to `research/inbox` with `save_page`.
-3. Read the extraction with `read_attachment`. For a large collection, search first and read only the relevant sources.
+2. Upload the document with `upload_attachment`, then add the returned attachment URL to `research/inbox` with `edit_page`.
+3. Read the extraction with `read_attachment`, which returns a long document in windows. For a large collection, search first and read only the relevant sources.
 4. Update existing topic pages or create the minimum new ones. Link related pages with `[[wiki-links]]`.
 5. Add the original attachment link to each changed page:
 

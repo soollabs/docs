@@ -57,9 +57,14 @@ jobs:
             echo 'changed=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          python3 scripts/generate-settings.py --schema-dir .schema-source/internal/config/schema
+          # Releases before 0.7.0 publish no MCP tool definitions.
+          mcp_tools=()
+          if [ -f .schema-source/internal/mcp/schema/tools.json ]; then
+            mcp_tools=(--mcp-tools .schema-source/internal/mcp/schema/tools.json)
+          fi
+          python3 scripts/generate-settings.py --schema-dir .schema-source/internal/config/schema "${mcp_tools[@]}"
           git diff --check
-          paths=(holdmydocs/reference/configuration.md holdmydocs/reference/wiki-configuration.md holdmydocs/reference/namespace-configuration.md holdmydocs/admin/settings.md)
+          paths=(holdmydocs/reference/configuration.md holdmydocs/reference/wiki-configuration.md holdmydocs/reference/namespace-configuration.md holdmydocs/admin/settings.md holdmydocs/reference/mcp-tools.md)
           if git diff --quiet -- "${paths[@]}"; then
             echo 'changed=false' >> "$GITHUB_OUTPUT"
           else
@@ -101,7 +106,7 @@ jobs:
           git switch -c "$branch"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- holdmydocs/reference/configuration.md holdmydocs/reference/wiki-configuration.md holdmydocs/reference/namespace-configuration.md holdmydocs/admin/settings.md
+          git add -- holdmydocs/reference/configuration.md holdmydocs/reference/wiki-configuration.md holdmydocs/reference/namespace-configuration.md holdmydocs/admin/settings.md holdmydocs/reference/mcp-tools.md
           git commit -m 'docs: update pinned settings reference'
           gh auth setup-git
           expected="$(git ls-remote origin "refs/heads/$branch" | cut -f1)"

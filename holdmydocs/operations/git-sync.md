@@ -41,7 +41,7 @@ HMD_GIT_REMOTE_URL=https://github.com/soollabs/docs.git \
 Then open <http://127.0.0.1:8080/holdmydocs/>.
 
 - No account or token is needed for a public repository. Private repositories need a Git token, and private namespaces still need a sign-in.
-- Nobody can edit, upload or change settings, administrators included.
+- Nobody can save pages, upload or change settings, administrators included. Signed-in users with write access can try the editor, but nothing is saved.
 - HMD fetches updates every 10 seconds. Reload the page to see them.
 - Keep `hmd-docs` to reuse the download next time. Use a new folder for a different repository.
 

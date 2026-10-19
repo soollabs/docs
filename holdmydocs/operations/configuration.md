@@ -44,7 +44,10 @@ Each setting has an info icon showing its description, environment variable, res
 
 ## Read-only mode
 
-Set `HMD_SERVER_READ_ONLY=true` to block editing, uploads, setup and all settings saves. Settings stay visible.
+Set `HMD_SERVER_READ_ONLY=true` to block saving pages, uploads, setup and all settings saves. Settings stay visible.
+
+- Users with write access can still open the editor to try it, but it has no **Save** and nothing they type is kept.
+- **Appearance** still works: skin, palette and fonts are kept in that browser, not on the server.
 
 - Environment only: a `server.read_only` key in `config.yaml` stops HMD at startup.
 - To restore writes, unset it and restart.
