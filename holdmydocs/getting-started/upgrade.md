@@ -17,6 +17,8 @@ Back up before every upgrade, and read the release notes for anything you need t
 5. Start HMD with the same data folders.
 6. Sign in, open and save a page, and check the status bar shows sync is working.
 
+After an upgrade administrators may see a **Help page changed** banner. It means the wiki's `.help.md` differs from the help text of the new version. Use **Reset to built-in** in the settings to take the new text, or dismiss the banner to keep your own.
+
 ## Roll back
 
 - If the new version will not start, put the previous `hmd` binary or image tag back and start it with the same data folders.

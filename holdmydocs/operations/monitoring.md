@@ -40,6 +40,8 @@ On `SIGINT` or `SIGTERM`, HMD stops accepting connections and gives requests up 
 | `failed` | A push, fetch or divergent bidirectional pull failed. The local commit is intact but needs operator action. |
 | `no remote` | No remote is configured. The statusline shows "local only". |
 
+When the state is `failed`, administrators also see a red **Sync failed** banner on every page. It carries no error detail, because Git errors can include the remote address; read the cause in the server log.
+
 ## Health report
 
 `/_/health-report` is a wiki hygiene report for signed-in users. It lists:
@@ -70,6 +72,7 @@ HMD exposes no Prometheus metrics, so feed these checks and logs into your exist
 | Disk full | Stop writes, free space or restore capacity, restart, then verify `/_/ready`. |
 | Git remote outage | Keep the local repository, fix credentials or network access, then push from the host or wait for the next sync. |
 | Divergent Git history | Resolve it outside HMD and fast-forward the local checkout. Do not reset the live worktree. |
+| Search is out of date banner that does not clear | Save the affected pages again, or restart HMD. If it keeps returning, treat it as a corrupt search index. |
 | Corrupt search index | Stop HMD, remove only the configured derived index and its `.manifest.json`, then start HMD to rebuild it. |
 | Invalid config | Read the startup error, fix the named key and restart. Unknown YAML keys fail deliberately. |
 | OIDC outage | Use an existing local account if local login is still enabled, otherwise restore provider access. |

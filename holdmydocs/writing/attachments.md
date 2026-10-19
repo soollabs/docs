@@ -29,13 +29,13 @@ Search covers the text of `.txt` and `.md` attachments. PDF, Word and other docu
 
 ## Move attachments from older versions
 
-Older versions of HMD kept attachments in one shared folder. If yours did, administrators see a banner until the files are moved.
+Older versions of HMD kept attachments in one shared folder. If yours did, administrators see an **Attachments need attention** banner until the files are moved or, for a deleted namespace, deleted.
 
 1. Update every HMD instance that uses this wiki's content first.
 2. Open **Settings → Wiki**, which lists each namespace with files to move.
 3. Click **Move attachments**. Links do not change.
 
-Files belonging to a namespace that has since been deleted cannot be moved; delete them from the same list.
+Files belonging to a namespace that has since been deleted cannot be moved; delete them from the same list. Dismissing the banner hides it only until you next sign in.
 
 ## Next steps
 
