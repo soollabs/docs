@@ -10,6 +10,8 @@ Start a private HMD instance on your own computer with local storage. If someone
 - A Linux, macOS or Windows computer, or Docker.
 - An administrator password of at least 12 characters, kept in a password manager.
 
+Remove `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD` after the first start; see [[Authentication And Access]].
+
 You don't need a database, a Git hosting account or an AI service.
 
 ## Option 1: Release binary
