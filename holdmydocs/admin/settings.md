@@ -59,13 +59,28 @@ The system sections write `config.yaml`; see [[Configuration]].
 
 `.wiki.yaml` at the root of the content repository stores the site name and landing path. Edit it at `/_/settings/wiki`; see [[Wiki Configuration Reference]].
 
+## Banners
+
+Administrators see banners at the top of every page when something needs attention. Each can be dismissed with its close button, and all of them return the next time you sign in. Red banners always come first.
+
+| Banner | Shown when |
+| --- | --- |
+| **Sync failed** | The last Git sync failed. It links to **Settings → Git** and shows no error detail; see [[Monitoring And Maintenance]]. |
+| **Search is out of date** | Some pages could not be added to the search index. HMD keeps retrying in the background. |
+| **Settings need a restart** | Saved settings are waiting for a restart. It has a **Shut down** button. |
+| **Attachments need attention** | Attachments are still in the old shared folder; see [[Attachments]]. |
+| **Help page changed** | The wiki's `.help.md` differs from the built-in help for this version. **Reset to built-in** in the settings brings it back. |
+| **Read-only mode** | The instance is read-only, so settings are view-only. |
+
+When several banners show, the first is in full and the others sit behind it as thin strips; dismiss the first to see the next.
+
 ## Common pitfalls
 
 - Fields set via `HMD_*` environment variables are read-only. Each field's info tooltip shows its environment override, storage location and restart requirement.
 - The bootstrap admin comes from `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD`, used only on the first start. It cannot be changed from the UI.
 - Git and OIDC secrets must come from environment variables or private referenced files, never `config.yaml` or UI inputs; see [[Configuration]].
 - Read-only mode (`HMD_SERVER_READ_ONLY`) makes settings view-only. Unset it and restart to change them.
-- Settings that need a restart keep their running value until HMD restarts. A banner lists them, with a **Shut down** button that stops HMD so its supervisor can start it again.
+- Settings that need a restart keep their running value until HMD restarts. The restart banner lists them, with a **Shut down** button that stops HMD so its supervisor can start it again.
 
 Next: [[Personal Access Tokens]].
 
