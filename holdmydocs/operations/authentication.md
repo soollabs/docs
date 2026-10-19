@@ -11,7 +11,7 @@ Accounts, scopes, tokens, OAuth, OIDC and browser write protections.
 2. Use a password of 12–72 bytes with no control characters. Common placeholders and the user name are rejected.
 3. Remove both variables after that first start.
 
-- Scopes are `read` (view pages), `write` (edit pages) and `settings` (administrator).
+- Scopes are `read` (view pages), `write` (edit pages) and `admin` (administrator). Earlier versions called the admin scope `settings`. Stored users, tokens and OAuth connections are migrated automatically; replace `settings` with `admin` in `oidc.default_scopes` and in any OAuth client that requests it.
 
 ### Add a user
 

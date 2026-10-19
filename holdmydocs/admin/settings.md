@@ -16,7 +16,7 @@ Settings live at `/_/settings/<section>`. Each panel has its own shareable URL, 
 | MCP OAuth clients | `/_/settings/oauth-clients` | Administrator-managed client registrations. |
 | Wiki | `.wiki.yaml` in the repository | Site name and landing path. |
 
-- Personal, instance, namespace and OAuth client settings need the `settings` (administrative) scope.
+- Personal settings are open to every signed-in user. Instance, namespace and OAuth client settings need the `admin` scope.
 - Connected applications need a signed-in browser session, not administrative access. A bearer token cannot access either OAuth browser section.
 - Connected applications and MCP OAuth clients appear only when OAuth is enabled. Environment overrides is under Advanced.
 
@@ -61,7 +61,7 @@ The system sections write `config.yaml`; see [[Configuration]].
 
 ## Banners
 
-Administrators see banners at the top of every page when something needs attention. Each can be dismissed with its close button, and all of them return the next time you sign in. Red banners always come first.
+Administrators see banners at the top of every page when something needs attention. Only the read-only banner and the **Unsaved appearance** notice show to other users. Each can be dismissed with its close button, and all of them return the next time you sign in. Red banners always come first.
 
 | Banner | Shown when |
 | --- | --- |
@@ -70,7 +70,7 @@ Administrators see banners at the top of every page when something needs attenti
 | **Settings need a restart** | Saved settings are waiting for a restart. It has a **Shut down** button. |
 | **Attachments need attention** | Attachments are still in the old shared folder; see [[Attachments]]. |
 | **Help page changed** | The wiki's `.help.md` differs from the built-in help for this version. **Reset to built-in** in the settings brings it back. |
-| **Read-only mode** | The instance is read-only, so settings are view-only. Appearance still works and is kept in this browser. |
+| **Read-only mode** | The instance is read-only, so settings are view-only. Appearance still works and is kept in this browser. Only administrators are told which environment variable to unset. |
 
 When several banners show, the first is in full and the others sit behind it as thin strips; dismiss the first to see the next.
 
