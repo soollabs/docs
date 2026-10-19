@@ -24,6 +24,7 @@ HMD reads `<HMD_APP_DIR>/config.yaml`, or the file named by `HMD_CONFIG_FILE`. U
 | `server.max_upload_bytes` | `HMD_SERVER_MAX_UPLOAD_BYTES` | integer, `10485760` | minimum: `1`; maximum: `1073741824` | No | Largest attachment upload accepted, in bytes (default 10 MiB). |
 | `server.tika_timeout` | `HMD_SERVER_TIKA_TIMEOUT` | integer, `120` | minimum: `0`; maximum: `3600` | Yes | How long startup waits for Tika to be available before failing. 0 checks once. |
 | `server.skin` | `HMD_SERVER_SKIN` | string, `"phosphor"` | `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"`, `"bare"` | No | Skin used for users who have not chosen their own. |
+| `server.language` | `HMD_SERVER_LANGUAGE` | string, `"en-GB"` | `"en-GB"` | No | Language of the interface for everyone on this server. Wiki content is not translated. |
 | `server.admin.user` (environment only; not a file key) | `HMD_ADMIN_USER` | string; not specified | — | No | Bootstrap administrator user name, managed from the environment rather than config.yaml. |
 | `server.admin.password` (environment only; not a file key) | `HMD_ADMIN_PASSWORD` | string; not specified | — | No | Bootstrap administrator password, managed from the environment rather than config.yaml. **Secret.** |
 | `git.remote_url` | `HMD_GIT_REMOTE_URL` | string, `""` | format: `"url"`; schemes: `"https"` | No | HTTPS URL of an optional Git remote to push to. Leave empty to keep the repository local only. |

@@ -46,6 +46,7 @@ export:
 | `tree` | — | array; not specified | items: string | — | Order of pages and folders in the sidebar and static export. Drag to reorder; folders start collapsed and the index page stays first. |
 | `skin` | — | string; not specified | `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"`, `"bare"` | — | Skin shown to anonymous readers and in the static export. Signed-in users see their own skin. |
 | `palette` | — | string; not specified | — | — | Colour palette shown to anonymous readers and in the static export. Empty uses the skin's own palette. |
+| `image` | — | string; not specified | — | — | Link preview image for pages without an image of their own, shown when a page is shared in a chat app or social network, on public pages and in the static export. Names a PNG or JPEG attachment in this namespace as page/filename, e.g. index/hero.png. The export fails if the attachment is missing. |
 | `widgets` | — | array, `["pages", "namespaces", "tags", "log", "page-meta", "backlinks"]` | items: string | — | Sidebar widgets, in order. Leave empty for the built-in set. |
 | `new.template` | — | string, `"template"` | — | — | Hidden page whose body every quick-created page starts from. |
 | `new.slug` | — | string; not specified | — | — | Go template that names a quick-created page, such as {{.Now.Format "2006-01-02"}} for a daily journal. Enables Ctrl+J. |
