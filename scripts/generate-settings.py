@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Generate Markdown settings tables from a released HMD schema directory."""
+"""Generate Markdown settings and MCP tool tables from a released HMD checkout."""
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 
@@ -12,6 +13,8 @@ STORES = {
     "namespace": "reference/namespace-configuration.md",
     "preferences": "admin/settings.md",
 }
+
+MCP_PAGE = "reference/mcp-tools.md"
 
 
 def cell(value):
@@ -95,21 +98,97 @@ def table(store, schema):
     return "\n".join(lines)
 
 
-def generate(schema_dir, docs_dir):
+# Wiki-links and Markdown links in a tool description are examples, not links:
+# code spans keep the docs site from rendering them.
+LINK_SYNTAX = re.compile(r"\[\[[^\]]*\]\]|!?\[[^\]]*\]\([^)]*\)")
+
+
+def text(value):
+    escaped = cell(value).replace("<", "&lt;").replace(">", "&gt;")
+    return LINK_SYNTAX.sub(lambda match: "`" + match.group(0) + "`", escaped)
+
+
+def effect(annotations):
+    # MCP defaults: a tool is not read-only and is destructive unless it says otherwise.
+    if annotations.get("readOnlyHint"):
+        return "read-only"
+    return "destructive" if annotations.get("destructiveHint", True) else "writes"
+
+
+def tool_summary(tools):
+    lines = [
+        "| Tool | Scope | Effect | What it does |",
+        "| --- | --- | --- | --- |",
+    ]
+    for tool in tools:
+        description = text(tool["description"])
+        if tool.get("x-document-search"):
+            description += " Listed only when document search is enabled."
+        lines.append("| " + " | ".join((
+            "`" + tool["name"] + "`", tool["x-scope"], effect(tool.get("annotations", {})), description,
+        )) + " |")
+    return "\n".join(lines)
+
+
+def parameter_rules(schema):
+    parts = [] if rules(schema) == "—" else [rules(schema)]
+    if "x-default" in schema:
+        parts.append("default: " + literal(schema["x-default"]))
+    if schema.get("properties"):
+        parts.append("fields: " + ", ".join("`" + key + "`" for key in schema["properties"]))
+    return "; ".join(parts) or "—"
+
+
+def tool_parameters(tools):
+    sections = []
+    for tool in tools:
+        schema = tool["inputSchema"]
+        heading = "### `" + tool["name"] + "`"
+        properties = schema.get("properties", {})
+        if not properties:
+            sections.append(heading + "\n\nNo parameters.")
+            continue
+        required = set(schema.get("required", []))
+        lines = [
+            heading, "",
+            "| Parameter | Type | Required | Accepted values | Description |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+        for key, parameter in properties.items():
+            if not parameter.get("description"):
+                raise ValueError(f"{tool['name']}.{key} has no description")
+            lines.append("| " + " | ".join((
+                "`" + key + "`", cell(parameter.get("type", "unspecified")),
+                "Yes" if key in required else "No", parameter_rules(parameter),
+                text(parameter["description"]),
+            )) + " |")
+        sections.append("\n".join(lines))
+    return "\n\n".join(sections)
+
+
+def replace_block(path, body, name, content):
+    start, end = f"<!-- generated:{name} -->", f"<!-- /generated:{name} -->"
+    if body.count(start) != 1 or body.count(end) != 1:
+        raise ValueError(f"{path}: expected exactly one {name} marker pair")
+    before, rest = body.split(start)
+    previous, after = rest.split(end)
+    if end in before:
+        raise ValueError(f"{path}: reversed {name} markers")
+    return before + start + "\n\n" + content + "\n\n" + end + after
+
+
+def generate(schema_dir, docs_dir, mcp_tools=None):
     # Validate all inputs before changing any output.
     updates = []
     for store, relative in STORES.items():
         schema = json.loads((schema_dir / (store + ".schema.json")).read_text())
         path = docs_dir / relative
-        body = path.read_text()
-        start, end = f"<!-- generated:{store} -->", f"<!-- /generated:{store} -->"
-        if body.count(start) != 1 or body.count(end) != 1:
-            raise ValueError(f"{path}: expected exactly one marker pair")
-        before, rest = body.split(start)
-        previous, after = rest.split(end)
-        if end in before:
-            raise ValueError(f"{path}: reversed markers")
-        updates.append((path, before + start + "\n\n" + table(store, schema) + "\n\n" + end + after))
+        updates.append((path, replace_block(path, path.read_text(), store, table(store, schema))))
+    if mcp_tools is not None:
+        tools = json.loads(mcp_tools.read_text())
+        path = docs_dir / MCP_PAGE
+        body = replace_block(path, path.read_text(), "mcp-tools", tool_summary(tools))
+        updates.append((path, replace_block(path, body, "mcp-parameters", tool_parameters(tools))))
     for path, body in updates:
         if path.read_text() != body:
             path.write_text(body)
@@ -118,6 +197,7 @@ def generate(schema_dir, docs_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--schema-dir", type=Path, required=True)
+    parser.add_argument("--mcp-tools", type=Path, help="internal/mcp/schema/tools.json from the same HMD release")
     parser.add_argument("--docs-dir", type=Path, default=Path("holdmydocs"))
     args = parser.parse_args()
-    generate(args.schema_dir, args.docs_dir)
+    generate(args.schema_dir, args.docs_dir, args.mcp_tools)

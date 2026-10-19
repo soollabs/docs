@@ -24,7 +24,7 @@ Settings live at `/_/settings/<section>`. Each panel has its own shareable URL, 
 
 These sections store your account settings in `users.json`:
 
-- **Appearance**: skin, palette, and UI and code fonts; see [[Skins And Palettes]]. The top-bar theme control (System, Light, Dark) is stored in this browser.
+- **Appearance**: skin, palette, and UI and code fonts; see [[Skins And Palettes]]. A choice applies to every page in this browser straight away, with an **Unsaved appearance** notice offering **Save** and **Discard** until you save it. The top-bar theme control (System, Light, Dark) is stored in this browser.
 - **Git author**: your commit identity as `Name <email>`, which overrides the instance default.
 - **Access tokens**: personal access tokens for API and MCP clients; see [[Personal Access Tokens]].
 
@@ -70,7 +70,7 @@ Administrators see banners at the top of every page when something needs attenti
 | **Settings need a restart** | Saved settings are waiting for a restart. It has a **Shut down** button. |
 | **Attachments need attention** | Attachments are still in the old shared folder; see [[Attachments]]. |
 | **Help page changed** | The wiki's `.help.md` differs from the built-in help for this version. **Reset to built-in** in the settings brings it back. |
-| **Read-only mode** | The instance is read-only, so settings are view-only. |
+| **Read-only mode** | The instance is read-only, so settings are view-only. Appearance still works and is kept in this browser. |
 
 When several banners show, the first is in full and the others sit behind it as thin strips; dismiss the first to see the next.
 
@@ -79,7 +79,7 @@ When several banners show, the first is in full and the others sit behind it as 
 - Fields set via `HMD_*` environment variables are read-only. Each field's info tooltip shows its environment override, storage location and restart requirement.
 - The bootstrap admin comes from `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD`, used only on the first start. It cannot be changed from the UI.
 - Git and OIDC secrets must come from environment variables or private referenced files, never `config.yaml` or UI inputs; see [[Configuration]].
-- Read-only mode (`HMD_SERVER_READ_ONLY`) makes settings view-only. Unset it and restart to change them.
+- Read-only mode (`HMD_SERVER_READ_ONLY`) makes settings view-only, apart from Appearance, which is kept in the browser. Unset it and restart to change them.
 - Settings that need a restart keep their running value until HMD restarts. The restart banner lists them, with a **Shut down** button that stops HMD so its supervisor can start it again.
 
 Next: [[Personal Access Tokens]].

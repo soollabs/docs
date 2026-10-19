@@ -7,7 +7,7 @@ A skin sets presentation (typography, spacing, borders, markers, statusline segm
 
 ## Skins
 
-Choosing a skin resets the palette to its pairing unless you pick a palette afterwards.
+Choosing a skin resets the palette to its pairing and the fonts to the skin's own, unless you pick them afterwards.
 
 | Skin | Look | Default palette |
 | --- | --- | --- |
