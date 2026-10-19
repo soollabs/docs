@@ -15,7 +15,7 @@ on:
         description: HoldMyDocs renderer release tag
         required: false
         # renovate: datasource=github-tags depName=soollabs/holdmydocs versioning=semver
-        default: v0.5.0
+        default: v0.6.0
         type: string
 
 permissions:
