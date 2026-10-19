@@ -69,7 +69,7 @@ Through the proxy, check login, save, upload and MCP access. Confirm the session
 | Symptom | Cause |
 | --- | --- |
 | Login works, saves fail | Browser `Origin` does not match `server.base_url`, or the proxy rewrote Host. |
-| No HSTS header | HMD did not get an accepted `X-Forwarded-Proto: https`. Add the proxy peer to `server.trusted_proxies`. |
+| No HSTS header | HMD did not receive an accepted `X-Forwarded-Proto: https`. Add the proxy peer to `server.trusted_proxies`. |
 | Path prefix such as `https://example.com/hmd/` | Unsupported. HMD serves from the origin root and rejects a `base_url` with a path. Use a dedicated host. |
 
 ## Next steps

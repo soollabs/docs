@@ -20,7 +20,7 @@ Open **Settings → Namespaces** and click **Edit** next to it.
 | Section | What you can change |
 | --- | --- |
 | General | Description, homepage (**index page**), page order in the sidebar and quick-create template |
-| Published | Whether anyone can read it without signing in, and how it looks to them |
+| Published | Whether anyone can read it without signing in, how it looks to them and its link preview image |
 | Static site | Settings for exporting it as a website, see [[Static Export]] |
 | Widgets | What appears in the sidebar |
 
@@ -29,6 +29,15 @@ Open **Settings → Namespaces** and click **Edit** next to it.
 ## Public or private
 
 Visibility covers the whole namespace, never single pages. A public namespace lets anyone read every page and attachment in it without signing in. Keep anything internal in a separate private namespace.
+
+## Link previews
+
+When someone shares a page from a public namespace or a static export, chat apps and social networks show a preview card. HMD fills it in from the page:
+
+- The description is the page's first paragraph, shortened to about 155 characters. A page without text uses the namespace description.
+- The image is the first PNG or JPEG attached to the page. Pages without one use the namespace's **link preview image**, chosen under **Published** from the namespace's attachments.
+
+Keep preview images under 300 KB, or WhatsApp leaves them out. Public pages only get preview cards when the server has a `server.base_url`.
 
 ## Quick-create pages
 

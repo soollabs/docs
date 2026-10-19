@@ -9,4 +9,4 @@ Personal preferences and instance configuration are separate, and not every sign
 - [[Authentication And Access]]: local accounts or OIDC sign-in, and read, write and settings permissions.
 - [[Personal Access Tokens]]: credentials for scripts and assistants, limited by permission and namespace.
 
-New instance: start with [[First-Run Setup]]. Namespace homepage, page order or visibility: see [[Namespaces]].
+For a new instance, start with [[First-Run Setup]]. To change a namespace's homepage, page order or visibility, see [[Namespaces]].

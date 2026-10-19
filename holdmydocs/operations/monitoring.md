@@ -23,7 +23,7 @@ curl -fsS https://wiki.example.com/_/live
 curl -fsS https://wiki.example.com/_/ready
 ```
 
-While HMD starts, `/_/live` returns `200` and other requests get `503` with `Retry-After`. Browsers see a page that reloads itself once HMD is ready.
+While HMD starts, `/_/live` returns `200` and HMD answers other requests with `503` and `Retry-After`. Browsers see a page that reloads itself once HMD is ready.
 
 The Docker health check runs the same readiness check (the `-healthcheck` flag).
 

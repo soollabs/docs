@@ -67,10 +67,11 @@ Save the Static site settings, then choose **Preview** to open a snapshot in a n
 
 The site uses the namespace's look and page order, without editing controls.
 
-- **Links** between pages in the namespace keep working. Links to pages in other namespaces become plain text, so use wiki-links between your docs pages.
-- **Attachments** are all included, even ones no page links to.
-- **Search** works in the browser with **Search docs** or **Ctrl+K** (**Cmd+K** on macOS). It covers page text, not attachments.
-- **Left out:** hidden pages, editing, sign-in, history and backlinks.
+- Links between pages in the namespace keep working. Links to pages in other namespaces become plain text, so use wiki-links between your docs pages.
+- Every attachment is included, even ones no page links to.
+- Search runs in the browser with **Search docs** or **Ctrl+K** (**Cmd+K** on macOS) and covers page text only.
+- Every page gets a description, a canonical address and link preview tags, built from the publishing URL. See Link previews in [[Namespaces]].
+- Hidden pages, editing, sign-in, history and backlinks are left out.
 - The site works at the root of a domain, under a folder such as `/docs/`, or from a local folder.
 
 ## Before you publish
@@ -97,6 +98,7 @@ hmd -export-namespace holdmydocs -export-dir ./site \
 ## Common pitfalls
 
 - **No export action.** The namespace has no pages yet. Create one first.
+- **Export fails with "link preview image not found".** The namespace's link preview image was deleted or renamed. Choose another under **Edit → Published**, or none.
 - **Stale site.** The export is a snapshot. Re-export after editing pages or attachments, or after moving pages.
 
 ## Next steps

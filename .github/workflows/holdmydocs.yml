@@ -12,7 +12,7 @@ on:
       - "wrangler.jsonc"
       - ".wiki.yaml"
       - "holdmydocs/**"
-      - "attachments/holdmydocs/**"
+      - "holdmydocs/.attachments/**"
   pull_request:
     types:
       - opened
@@ -27,7 +27,7 @@ on:
       - "wrangler.jsonc"
       - ".wiki.yaml"
       - "holdmydocs/**"
-      - "attachments/holdmydocs/**"
+      - "holdmydocs/.attachments/**"
   workflow_dispatch:
 
 permissions:

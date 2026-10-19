@@ -3,6 +3,8 @@ title: Limitations
 tags: hmd, reference
 ---
 
+What HMD does not do yet, so you can check it fits before you rely on it.
+
 - No real-time collaborative editing, live cursors or shared buffers. Concurrent saves use optimistic locking.
 - Git remotes need HTTPS authentication. SSH remotes are unsupported.
 - Namespaces are top-level only. Deeper folders organise pages but are not namespaces.
