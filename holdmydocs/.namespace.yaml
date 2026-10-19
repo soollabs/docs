@@ -10,6 +10,7 @@ title: Hold My Docs
 description: Learn to write, organise, and publish a Git-backed wiki with Hold My Docs.
 skin: soft
 palette: nord
+image: index/hero.png
 index: index
 export:
   base_url: https://hmd.sool.dev/

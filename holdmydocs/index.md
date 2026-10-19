@@ -3,7 +3,7 @@ title: Hold My Docs
 tags: hmd, documentation
 ---
 
-**A wiki you host. Markdown you own. History you can trust.**
+**A self-hosted wiki that keeps your Markdown and its full history in Git.**
 
 ![A fictional HMD wiki on a desktop and phone](/_/attachments/holdmydocs/index/hero.png)
 
@@ -11,20 +11,20 @@ Hold My Docs (HMD) is a browser-based place to write, find and share documentati
 
 **New here?** If someone runs HMD for you, start with [[Your First Wiki]]. To set it up yourself, follow [[Install HMD]] and [[First-Run Setup]] first.
 
-## What you get
+## Features
 
-- **Web editor.** Markdown with a preview, images, files, tables and diagrams. Every save is a Git commit, so you can see changes and restore earlier versions.
-- **Linked pages.** Wiki-links, backlinks, and search across titles, text and tags.
-- **Namespaces.** Separate areas of the wiki with their own navigation, appearance and visibility.
-- **Access control.** Keep a namespace private, let visitors read it without signing in, or export it as a static website that needs only a file host. This site is one of those exports.
-- **AI assistants.** Connect an assistant through MCP with read or maintain permissions on selected namespaces. Its changes go into the same Git history. See [[MCP Integration]].
+- You write Markdown in the browser, with a preview, images, files, tables and diagrams. Every save is a Git commit, so you can see what changed and restore earlier versions.
+- Pages link to each other with wiki-links and backlinks, and search covers titles, text and tags.
+- Namespaces split the wiki into areas with their own navigation, appearance and visibility.
+- A namespace can stay private, open for anyone to read, or be exported as a static website that needs only a file host. This site is one of those exports.
+- An AI assistant can connect through MCP with read or maintain permission on selected namespaces, and its edits land in the same Git history. See [[MCP Integration]].
 
 ## Start with what you want to do
 
-- **Personal wiki.** Follow [[Your First Wiki]], then [[Links And Navigation]].
-- **Project or team docs.** Start with [[Namespaces]], then configure [[Authentication And Access]] before inviting people.
-- **Public product docs.** Follow [[Static Export]] to publish a read-only site.
-- **Knowledge for an AI assistant.** Start with [[MCP Integration]] and the [[LLM Wiki]] example.
+- For a personal wiki, follow [[Your First Wiki]], then [[Links And Navigation]].
+- For project or team docs, start with [[Namespaces]] and set up [[Authentication And Access]] before inviting people.
+- To publish public product docs, follow [[Static Export]].
+- To give an AI assistant a knowledge base, start with [[MCP Integration]] and the [[LLM Wiki]] example.
 
 ## Explore the documentation
 

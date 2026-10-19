@@ -126,7 +126,7 @@ Dot-prefixed drafts and templates live under `/_/hidden`. There is no hidden-pag
 | --- | --- | --- |
 | `POST /_/mcp` | Any authenticated | MCP JSON-RPC calls; each tool enforces its own scope and namespace rules. |
 
-MCP is stateless: no GET streams or DELETE session teardown. `2026-07-28` requests need the matching version header and per-request protocol/client/capability metadata, and use `server/discover`. Legacy Streamable HTTP clients can negotiate `2025-03-26`, `2025-06-18` or `2025-11-25` through `initialize` without the modern header or metadata. See [[MCP Integration]] and [[MCP Tool Reference]] for the tool list and scope map.
+MCP is stateless, so there are no GET streams and no DELETE session teardown. `2026-07-28` requests need the matching version header and per-request protocol/client/capability metadata, and use `server/discover`. Legacy Streamable HTTP clients can negotiate `2025-03-26`, `2025-06-18` or `2025-11-25` through `initialize` without the modern header or metadata. See [[MCP Integration]] and [[MCP Tool Reference]] for the tool list and scope map.
 
 ## API
 
@@ -162,6 +162,6 @@ All API routes accept a Bearer PAT or a session cookie. Most return JSON; Markdo
 
 - Reverse proxies must not rewrite or swallow `/_/` paths.
 - Use `/_/live` or `/_/ready` for unauthenticated load-balancer probes.
-- A restricted PAT that cannot resolve a route to an allowed namespace gets 403, not 404.
+- HMD returns 403 to a restricted PAT that cannot resolve a route to an allowed namespace.
 
 Next: [[API Reference]].
