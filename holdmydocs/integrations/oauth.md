@@ -35,7 +35,7 @@ When the client connects, HMD shows an approval page with the client name, its c
 | --- | --- |
 | read | Searching and reading pages |
 | write | Creating, editing and deleting pages and uploading files. Does not include read. |
-| settings | Administrator access to every namespace, now and in future. Off unless **allow administrator delegation** is turned on. |
+| admin | Administrator access to every namespace, now and in future. Off unless **allow administrator delegation** is turned on. |
 
 Some clients only ask for read. To let one edit, set its requested scope to `read write`, make sure its registration allows both, and reconnect.
 

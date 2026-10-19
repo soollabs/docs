@@ -9,14 +9,14 @@ Settings live at `/_/settings/<section>`. Each panel has its own shareable URL, 
 
 | Surface | Route | What it holds |
 | --- | --- | --- |
-| Personal | `/_/settings/appearance` | Appearance, git author identity, access tokens. |
+| Personal | `/_/settings/appearance` | Appearance, git author identity, password, access tokens. |
 | Instance | `/_/settings/server` | Server, Git, MCP, OIDC, document search, users, environment overrides. |
 | Namespaces | `/_/settings/namespaces` | Per-namespace visibility, navigation and page-creation defaults. |
 | Connected applications | `/_/settings/connections` | Your OAuth connections and disconnection controls. |
 | MCP OAuth clients | `/_/settings/oauth-clients` | Administrator-managed client registrations. |
 | Wiki | `.wiki.yaml` in the repository | Site name and landing path. |
 
-- Personal, instance, namespace and OAuth client settings need the `settings` (administrative) scope.
+- Personal settings are open to every signed-in user. Instance, namespace and OAuth client settings need the `admin` scope.
 - Connected applications need a signed-in browser session, not administrative access. A bearer token cannot access either OAuth browser section.
 - Connected applications and MCP OAuth clients appear only when OAuth is enabled. Environment overrides is under Advanced.
 
@@ -26,6 +26,7 @@ These sections store your account settings in `users.json`:
 
 - **Appearance**: skin, palette, and UI and code fonts; see [[Skins And Palettes]]. A choice applies to every page in this browser straight away, with an **Unsaved appearance** notice offering **Save** and **Discard** until you save it. The top-bar theme control (System, Light, Dark) is stored in this browser.
 - **Git author**: your commit identity as `Name <email>`, which overrides the instance default.
+- **Password**: change your own password with your current password and confirmation of the new one. Other browser sessions are signed out. Single sign-on users manage their password at their identity provider and do not see this panel.
 - **Access tokens**: personal access tokens for API and MCP clients; see [[Personal Access Tokens]].
 
 ![Skin and palette choices in the appearance settings](/_/attachments/holdmydocs/admin/settings/appearance.png)
@@ -40,7 +41,7 @@ The system sections write `config.yaml`; see [[Configuration]].
 - **OIDC single sign-on**: non-secret identity-provider configuration.
 - **Document search**: Tika endpoint, model and storage directories.
 - **Wiki**: site name, landing destination, re-run setup.
-- **Users**: add users and change their scopes; see [[Authentication And Access]].
+- **Users**: list every account, add users, change scopes, reset local passwords and delete other users; see [[Authentication And Access]]. Resets sign the user out everywhere but keep tokens and OAuth connections; deletion revokes those too. The last administrator cannot be demoted or deleted, and administrators cannot demote or delete themselves.
 - **Environment overrides**: effective `HMD_*` overrides and configuration export. Export writes non-secret file settings only.
 
 ![Server settings with info icons](/_/attachments/holdmydocs/admin/settings/server.png)
@@ -61,7 +62,7 @@ The system sections write `config.yaml`; see [[Configuration]].
 
 ## Banners
 
-Administrators see banners at the top of every page when something needs attention. Each can be dismissed with its close button, and all of them return the next time you sign in. Red banners always come first.
+Administrators see banners at the top of every page when something needs attention. Only the read-only banner and the **Unsaved appearance** notice show to other users. Each can be dismissed with its close button, and all of them return the next time you sign in. Red banners always come first.
 
 | Banner | Shown when |
 | --- | --- |
@@ -70,14 +71,15 @@ Administrators see banners at the top of every page when something needs attenti
 | **Settings need a restart** | Saved settings are waiting for a restart. It has a **Shut down** button. |
 | **Attachments need attention** | Attachments are still in the old shared folder; see [[Attachments]]. |
 | **Help page changed** | The wiki's `.help.md` differs from the built-in help for this version. **Reset to built-in** in the settings brings it back. |
-| **Read-only mode** | The instance is read-only, so settings are view-only. Appearance still works and is kept in this browser. |
+| **Bootstrap credentials still set** | Either bootstrap environment variable remains configured. They only create the first account and are ignored afterwards; remove them and manage accounts under Users. |
+| **Read-only mode** | The instance is read-only, so settings are view-only. Appearance still works and is kept in this browser. Only administrators are told which environment variable to unset. |
 
 When several banners show, the first is in full and the others sit behind it as thin strips; dismiss the first to see the next.
 
 ## Common pitfalls
 
 - Fields set via `HMD_*` environment variables are read-only. Each field's info tooltip shows its environment override, storage location and restart requirement.
-- The bootstrap admin comes from `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD`, used only on the first start. It cannot be changed from the UI.
+- `HMD_ADMIN_USER` and `HMD_ADMIN_PASSWORD` only create the first administrator when `users.json` does not exist. Afterwards that account is managed under Users like any other, and these variables do not appear under Server. Use offline `-reset-admin` recovery if administrator access is lost.
 - Git and OIDC secrets must come from environment variables or private referenced files, never `config.yaml` or UI inputs; see [[Configuration]].
 - Read-only mode (`HMD_SERVER_READ_ONLY`) makes settings view-only, apart from Appearance, which is kept in the browser. Unset it and restart to change them.
 - Settings that need a restart keep their running value until HMD restarts. The restart banner lists them, with a **Shut down** button that stops HMD so its supervisor can start it again.

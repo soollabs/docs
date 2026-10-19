@@ -11,7 +11,7 @@ Content owns the root. Application routes live under `/_/`, the one top-level se
 
 - **None**: reachable without credentials (probes, login, static assets, one-use upload URLs).
 - **Anonymous page**: a page view or attachment is served unauthenticated when the namespace is public, and is identical to a 404 when it is not. Every other request needs a login session or a Bearer personal access token (PAT).
-- **Session or PAT**: a session cookie or `Authorization: Bearer` token. Scopes: `read` for GET/HEAD, `write` for POST/DELETE, `settings` for settings and namespace management, including personal settings. Connected applications is browser-session only. API and MCP auth failures return HTTP 401 with a JSON body, never a login redirect. A PAT restricted to namespaces can only reach paths in those namespaces.
+- **Session or PAT**: a session cookie or `Authorization: Bearer` token. Scopes: `read` for GET/HEAD, `write` for POST/DELETE, `admin` for system settings and namespace management. Personal settings need only a signed-in user. Connected applications is browser-session only. API and MCP auth failures return HTTP 401 with a JSON body, never a login redirect. A PAT restricted to namespaces can only reach paths in those namespaces.
 
 OAuth access tokens are valid for `/_/mcp` only. Refresh tokens are not bearer credentials. OAuth consent and connection-management routes need a browser session, not a PAT or OAuth token. Token and revocation endpoints use registered-client authentication.
 
@@ -43,7 +43,7 @@ OAuth access tokens are valid for `/_/mcp` only. Refresh tokens are not bearer c
 
 ## MCP OAuth
 
-Registered only when OAuth is enabled. Browser POSTs need the live session, exact Origin and CSRF token. Approving or disconnecting a grant does not need the `write` or `settings` action. See [[MCP OAuth]].
+Registered only when OAuth is enabled. Browser POSTs need the live session, exact Origin and CSRF token. Approving or disconnecting a grant does not need the `write` or `admin` action. See [[MCP OAuth]].
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
@@ -60,7 +60,7 @@ Clients authenticate with their registered method: `none`, `client_secret_basic`
 
 ## Settings, admin and namespaces
 
-Personal settings, token and appearance actions, and namespace management need the `settings` scope. Connected applications needs a browser session without administrative access. OAuth client administration needs a settings-capable browser session. See [[Settings And Administration]].
+Personal settings (appearance, git author and access tokens) and their saves need only a signed-in user, and a token also needs the `preferences` scope; read-only mode still refuses the saves. Every other settings route and namespace management need the `admin` scope. Connected applications needs a browser session without administrative access. OAuth client administration needs an admin browser session. See [[Settings And Administration]].
 
 | Route | Method | Purpose |
 | --- | --- | --- |
@@ -74,7 +74,7 @@ Personal settings, token and appearance actions, and namespace management need t
 | `/_/settings/namespaces/{name}/edit/widgets` | GET | Namespace widget composition. |
 | `/_/settings/namespaces/{name}/export` | GET | Export the namespace as a static site. |
 | `/_/settings/namespaces/{name}/preview` | GET | Create a protected static-site preview. |
-| `/_/export-preview/{id}/{path...}` | GET/HEAD | Serve a snapshot to its creator with current `settings` access to the namespace. Previews expire after 15 minutes. |
+| `/_/export-preview/{id}/{path...}` | GET/HEAD | Serve a snapshot to its creator with current `admin` access to the namespace. Previews expire after 15 minutes. |
 | `/_/settings/connections` | GET | Connected applications for the signed-in user. |
 | `/_/settings/connections/{id}/revoke` | POST | Disconnect one application. |
 | `/_/settings/oauth-clients` | GET | MCP OAuth client administration. |
@@ -97,7 +97,7 @@ Personal settings, token and appearance actions, and namespace management need t
 | `/_/api/settings/shutdown` | POST | Shut down HMD gracefully. |
 | `/_/api/settings/attachments/migrate` | POST | Move attachments from the old top-level `attachments/` folder into their namespaces. |
 | `/_/api/settings/attachments/delete` | POST | Delete the old-folder attachments of a namespace that no longer exists. |
-| `/_/api/setup` | POST | Complete first-run setup (settings scope). |
+| `/_/api/setup` | POST | Complete first-run setup (admin scope). |
 | `/_/api/settings/wiki` | POST | Save `.wiki.yaml` (site name and landing). |
 | `/_/api/settings/help/reset` | POST | Restore the help guide. |
 

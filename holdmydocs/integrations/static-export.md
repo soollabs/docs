@@ -51,7 +51,7 @@ The **Edit → Static site** page controls the publishing URL, sitemap, bot rule
 
 Save the Static site settings, then choose **Preview** to open a snapshot in a new tab. Generate a new preview after each change.
 
-- Only its creator can open it, and they need `settings` access to the namespace.
+- Only its creator can open it, and they need `admin` access to the namespace.
 - Previews expire after 15 minutes. A new preview for the same namespace replaces your previous one.
 - An instance allows four active previews. If it is full, wait for one to expire.
 - Previewing does not publish the site or save settings.

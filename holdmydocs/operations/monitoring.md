@@ -29,7 +29,7 @@ The Docker health check runs the same readiness check (the `-healthcheck` flag).
 
 ## Graceful shutdown
 
-On `SIGINT` or `SIGTERM`, HMD stops accepting connections and gives requests up to 30 seconds to finish. Within the same deadline it waits for asynchronous Git pushes from completed saves, then closes the search index. **Shut down** in the top-bar menu (users with settings access) does the same.
+On `SIGINT` or `SIGTERM`, HMD stops accepting connections and gives requests up to 30 seconds to finish. Within the same deadline it waits for asynchronous Git pushes from completed saves, then closes the search index. **Shut down** in the top-bar menu (users with admin access) does the same.
 
 ## Sync states
 
