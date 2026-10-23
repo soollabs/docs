@@ -66,7 +66,7 @@ Use personal access tokens (PATs) for scripts and MCP, never browser cookies. Se
 
 ## MCP OAuth
 
-OAuth is an opt-in alternative to PATs for MCP clients. Setup, client provisioning, backup and recovery are in [[MCP OAuth]].
+OAuth is an opt-in alternative to PATs for MCP clients. Setup and client registration are in [[MCP Integration]], backup and restore in [[Storage And Recovery]].
 
 - Users sign in with the local form or OIDC, then approve the client's actions and namespace access.
 - Review and disconnect grants at `/_/settings/connections`. Disconnecting revokes the grant's access and refresh tokens.

@@ -7,8 +7,7 @@ None of these integrations is required to create your first wiki.
 
 ## Connect an AI assistant
 
-- [[MCP Integration]]: credentials, the MCP endpoint and client configuration.
-- [[MCP OAuth]]: browser-based authorisation.
+- [[MCP Integration]]: credentials or OAuth, the MCP endpoint and client configuration.
 - [[MCP Tool Reference]]: exact tool inputs and outputs.
 - [[LLM Wiki]]: an example of an assistant-maintained knowledge base.
 
