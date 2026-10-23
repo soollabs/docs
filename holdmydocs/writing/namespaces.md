@@ -22,7 +22,7 @@ Open **Settings → Namespaces** and click **Edit** next to it.
 | General | Description, homepage (**index page**), page order in the sidebar and quick-create template |
 | Published | Whether anyone can read it without signing in, how it looks to them and its link preview image |
 | Static site | Settings for exporting it as a website, see [[Static Export]] |
-| Widgets | What appears in the sidebar |
+| Widgets | What appears in the sidebar, see [[Namespace Configuration Reference]] |
 
 **Reset namespace settings** puts these back to the defaults and keeps every page.
 

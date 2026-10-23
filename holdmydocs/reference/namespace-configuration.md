@@ -35,6 +35,22 @@ export:
 - `tree` lists page or folder paths in order. Unlisted siblings follow alphabetically. Live sidebar and static exports use the same order.
 - `new` sets the hidden template and slug pattern for quick-create.
 
+Widgets you can list in `widgets`:
+
+| Widget | Heading | Shows |
+| --- | --- | --- |
+| `pages` | recently viewed | Pages you opened recently in this namespace, in this browser, with your palette pins first. |
+| `namespaces` | namespaces | Every namespace with its page count. |
+| `pinned` | pinned | Pages with `pin: true`. |
+| `tags` | tags | The five most used tags in this namespace, with a link to the rest. |
+| `log` | log | The last few commits to the current page. |
+| `health` | health | Missing links and orphaned pages, linking to the full report. |
+| `calendar` | | A month of daily pages, with entries highlighted. |
+| `writing-stats` | this month | Days written, streak and word count for this month. |
+| `page-meta` | | Tags, last editor and revision count, above the page. |
+| `backlinks` | linked from | Pages that link to this one, below the page. |
+| `prev-entries` | earlier | The daily entries just before this one, below the page. |
+
 <!-- generated:namespace -->
 
 | Key | Environment variable | Type and default | Accepted values | Restart | Description |

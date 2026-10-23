@@ -55,7 +55,7 @@ Ask the assistant to list your namespaces to check the connection.
 | --- | --- |
 | read | List, read and search pages, follow backlinks, see recent changes, run the health report, read attachment text |
 | write | Create, edit and delete pages, upload attachments |
-| settings | Read and change namespace settings, in every namespace |
+| admin | Read and change namespace settings, in every namespace |
 
 - Write does not include read. Tick both for an assistant that edits.
 - Every change is a normal Git commit, so you can review and revert it in page history.

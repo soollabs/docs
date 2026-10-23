@@ -32,11 +32,11 @@ curl -s -H "Authorization: Bearer hmd_your_token" \
 | `/_/api/pages/rename/{slug...}` | POST | write | Rename a page. |
 | `/_/api/pages/tags/{slug...}` | POST | write | Change page tags. |
 | `/_/api/pages/revert/{slug...}` | POST | write | Restore an earlier revision. |
-| `/_/api/namespaces` | POST | settings | Save a namespace configuration. |
-| `/_/api/namespaces/reset` | POST | settings | Restore namespace defaults. |
-| `/_/api/namespaces/delete` | POST | settings | Delete a namespace and every file beneath it. |
+| `/_/api/namespaces` | POST | admin | Save a namespace configuration. |
+| `/_/api/namespaces/reset` | POST | admin | Restore namespace defaults. |
+| `/_/api/namespaces/delete` | POST | admin | Delete a namespace and every file beneath it. |
 | `/_/api/settings/*` | POST | varies | Save settings, users and tokens (see [[Route Reference]]). |
-| `/_/api/setup` | POST | settings | Complete first-run setup. |
+| `/_/api/setup` | POST | admin | Complete first-run setup. |
 | `/_/api/preview/{slug...}` | GET | read | Page title, snippet, tags and age. |
 | `/_/api/preview` | POST | write | Render Markdown to HTML. |
 | `/_/api/attachments/{slug...}` | POST | write | Upload an attachment. |
