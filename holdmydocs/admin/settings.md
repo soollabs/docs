@@ -94,7 +94,7 @@ This table comes from the pinned HMD release's preferences schema. Preferences a
 
 | Key | Environment variable | Type and default | Accepted values | Restart | Description |
 | --- | --- | --- | --- | --- | --- |
-| `skin` | — | string; not specified | `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"`, `"bare"` | — | Typography, spacing, markers and statusline. Widgets and publishing are set per namespace; the same repository works under any skin. |
+| `skin` | — | string; not specified | `"bare"`, `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"` | — | Typography, spacing, markers and statusline. Widgets and publishing are set per namespace; the same repository works under any skin. |
 | `palette` | — | string; not specified | — | — | Colours only, independent of the skin. Swatches follow the current light or dark mode, chosen from the top bar. |
 | `font_ui` | — | string; not specified | — | — | Typeface for interface text and page prose. |
 | `font_mono` | — | string; not specified | — | — | Typeface for code blocks, the editor and other monospaced text. |

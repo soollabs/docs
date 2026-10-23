@@ -23,10 +23,10 @@ HMD reads `<HMD_APP_DIR>/config.yaml`, or the file named by `HMD_CONFIG_FILE`. U
 | `server.debug` | `HMD_SERVER_DEBUG` | boolean, `false` | — | Yes | Log at debug level. Logs never include credentials, queries or page bodies. |
 | `server.max_upload_bytes` | `HMD_SERVER_MAX_UPLOAD_BYTES` | integer, `10485760` | minimum: `1`; maximum: `1073741824` | No | Largest attachment upload accepted, in bytes (default 10 MiB). |
 | `server.tika_timeout` | `HMD_SERVER_TIKA_TIMEOUT` | integer, `120` | minimum: `0`; maximum: `3600` | Yes | How long startup waits for Tika to be available before failing. 0 checks once. |
-| `server.skin` | `HMD_SERVER_SKIN` | string, `"phosphor"` | `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"`, `"bare"` | No | Skin used for users who have not chosen their own. |
+| `server.skin` | `HMD_SERVER_SKIN` | string, `"bare"` | `"bare"`, `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"` | No | Skin used for users who have not chosen their own. |
 | `server.language` | `HMD_SERVER_LANGUAGE` | string, `"en-GB"` | `"en-GB"` | No | Language of the interface for everyone on this server. Wiki content is not translated. |
-| `server.admin.user` (environment only; not a file key) | `HMD_ADMIN_USER` | string; not specified | — | No | Bootstrap administrator user name, managed from the environment rather than config.yaml. |
-| `server.admin.password` (environment only; not a file key) | `HMD_ADMIN_PASSWORD` | string; not specified | — | No | Bootstrap administrator password, managed from the environment rather than config.yaml. **Secret.** |
+| `server.admin.user` (environment only; not a file key) | `HMD_ADMIN_USER` | string; not specified | — | No | Creates the first administrator when users.json does not exist yet; ignored after that. Remove it once the instance is set up. |
+| `server.admin.password` (environment only; not a file key) | `HMD_ADMIN_PASSWORD` | string; not specified | — | No | Creates the first administrator when users.json does not exist yet; ignored after that. Remove it once the instance is set up. **Secret.** |
 | `git.remote_url` | `HMD_GIT_REMOTE_URL` | string, `""` | format: `"url"`; schemes: `"https"` | No | HTTPS URL of an optional Git remote to push to. Leave empty to keep the repository local only. |
 | `git.user` | `HMD_GIT_USER` | string, `"hmd"` | — | No | User name sent to the Git remote when authenticating. |
 | `git.author` | `HMD_GIT_AUTHOR` | string, `""` | — | No | Commit author, as Name &lt;email&gt;, for users who have not set a personal Git author. |
@@ -39,7 +39,7 @@ HMD reads `<HMD_APP_DIR>/config.yaml`, or the file named by `HMD_CONFIG_FILE`. U
 | `mcp.oauth.enabled` | `HMD_MCP_OAUTH_ENABLED` | boolean, `false` | — | Yes | Let MCP clients sign in with OAuth instead of a pasted token. Requires MCP and an https server.base_url; http is allowed only on loopback with insecure loopback enabled. |
 | `mcp.oauth.dynamic_registration` | `HMD_MCP_OAUTH_DYNAMIC_REGISTRATION` | boolean, `false` | — | Yes | Let MCP clients register themselves. When off, an administrator registers each client under MCP OAuth clients. |
 | `mcp.oauth.allow_insecure_loopback` | `HMD_MCP_OAUTH_ALLOW_INSECURE_LOOPBACK` | boolean, `false` | — | Yes | Development only: permit http OAuth origins on loopback addresses. |
-| `mcp.oauth.allow_admin_delegation` | `HMD_MCP_OAUTH_ALLOW_ADMIN_DELEGATION` | boolean, `false` | — | Yes | Allow an administrator to grant a client the settings scope during OAuth consent. |
+| `mcp.oauth.allow_admin_delegation` | `HMD_MCP_OAUTH_ALLOW_ADMIN_DELEGATION` | boolean, `false` | — | Yes | Allow an administrator to grant a client the admin scope during OAuth consent. |
 | `oidc.issuer` | `HMD_OIDC_ISSUER` | string, `""` | format: `"url"`; schemes: `"https"`, `"http"` | Yes | HTTPS issuer URL of the OpenID Connect provider. Setting it enables single sign-on; register &lt;base_url&gt;/_/auth/oidc/callback with the provider. |
 | `oidc.client_id` | `HMD_OIDC_CLIENT_ID` | string, `""` | — | Yes | Client ID issued by the identity provider. |
 | `oidc.client_secret_file` | `HMD_OIDC_CLIENT_SECRET_FILE` | string, `""` | — | Yes | Path to a private file (mode 0600 or stricter) containing the OIDC client secret. |
@@ -47,7 +47,7 @@ HMD reads `<HMD_APP_DIR>/config.yaml`, or the file named by `HMD_CONFIG_FILE`. U
 | `oidc.local_login` | `HMD_OIDC_LOCAL_LOGIN` | boolean, `true` | — | Yes | Keep the username and password form alongside single sign-on. Useful as a fallback if the provider is unavailable. |
 | `oidc.button_text` | `HMD_OIDC_BUTTON_TEXT` | string, `"Sign in with SSO"` | — | Yes | Label of the single sign-on login button. |
 | `oidc.icon` | `HMD_OIDC_ICON` | string, `""` | — | Yes | Dashboard Icons name, or path to a square SVG, shown on the login button. |
-| `oidc.default_scopes` | — | array, `["read"]` | items: string; `"read"`, `"write"`, `"settings"` | Yes | Scopes given to a user the first time they sign in with OIDC: any of read, write and settings. |
+| `oidc.default_scopes` | — | array, `["read"]` | items: string; `"read"`, `"write"`, `"admin"` | Yes | Scopes given to a user the first time they sign in with OIDC: any of read, write and admin. |
 | `oidc.allowed_subjects` | — | array, `[]` | items: string | Yes | Provider subject IDs allowed to sign in. Required unless email domains or any authenticated identity are allowed. |
 | `oidc.allowed_email_domains` | — | array, `[]` | items: string; pattern: `"^[^@/\\s]+$"` | Yes | Email domains, such as example.com, whose verified addresses may sign in. |
 | `oidc.allow_any_authenticated` | `HMD_OIDC_ALLOW_ANY_AUTHENTICATED` | boolean, `false` | — | Yes | Admit anyone the identity provider authenticates, instead of using an HMD allowlist. |
