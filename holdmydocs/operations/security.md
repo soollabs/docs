@@ -29,7 +29,7 @@ HMD is a trusted-editor wiki. It protects the service boundary but does not sani
 - `users.json`, `oauth.json`, local configuration and external secret files are sensitive authoritative app state. Keep `oauth.json` whenever it exists, even while OAuth is disabled.
 - Sessions, search indexes, extracted search state and model downloads can be recreated.
 - Back up content and app state, and restrict backup access.
-- Restoring an older OAuth snapshot can bring back credentials revoked or rotated since. Before exposing a recovered service, disable the restored client registrations and require new registrations and fresh consent. See [[MCP OAuth]] and [[Storage And Recovery]].
+- Restoring an older OAuth snapshot can bring back credentials revoked or rotated since. Before exposing a recovered service, disable the restored client registrations and require new registrations and fresh consent. See [[MCP Integration]] and [[Storage And Recovery]].
 
 ## Known risks
 

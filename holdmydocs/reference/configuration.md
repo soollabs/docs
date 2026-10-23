@@ -64,7 +64,7 @@ HMD reads `<HMD_APP_DIR>/config.yaml`, or the file named by `HMD_CONFIG_FILE`. U
 - `document_search.tika_url` enables document extraction and semantic attachment search. The default model is checksum-verified on download. Any other model is trusted as configuration.
 - MCP and OIDC require `server.base_url`, the public origin.
 - An `unsafe data directory` error means you must recreate or restore a private directory owned by the service user.
-- MCP OAuth uses `server.base_url` as its issuer. It needs HTTPS unless `mcp.oauth.allow_insecure_loopback` is set. OAuth settings changes need a restart. Dynamic registration allows five attempts per minute globally and at most 32 registrations. See [[MCP OAuth]].
+- MCP OAuth uses `server.base_url` as its issuer. It needs HTTPS unless `mcp.oauth.allow_insecure_loopback` is set. OAuth settings changes need a restart. Dynamic registration allows five attempts per minute globally and at most 32 registrations. See [[MCP Integration]].
 - Environment-only rows are not `config.yaml` keys. Git tokens and OIDC client secrets come from the environment or a private referenced file. Exported configuration never includes secrets.
 - Site name and landing settings live in `.wiki.yaml`. Namespace visibility and widgets live in each namespace's `.namespace.yaml`. See [[Wiki Configuration Reference]].
 - See also [[Configuration]] and [[Upgrade HMD]].

@@ -43,7 +43,7 @@ OAuth access tokens are valid for `/_/mcp` only. Refresh tokens are not bearer c
 
 ## MCP OAuth
 
-Registered only when OAuth is enabled. Browser POSTs need the live session, exact Origin and CSRF token. Approving or disconnecting a grant does not need the `write` or `admin` action. See [[MCP OAuth]].
+Registered only when OAuth is enabled. Browser POSTs need the live session, exact Origin and CSRF token. Approving or disconnecting a grant does not need the `write` or `admin` action. See [[MCP Integration]].
 
 | Route | Auth | Purpose |
 | --- | --- | --- |
