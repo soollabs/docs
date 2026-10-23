@@ -40,6 +40,8 @@ HMD stores content in a local **Git repository**. Each save creates a **commit**
 
 A **remote** is an optional second repository on a Git host, and HMD pushes commits to it in the background. A saved page is not necessarily pushed yet: a network failure leaves it saved locally only. See [[Git Sync]].
 
+For what creates a commit, history and conflicts, see [[Git And History]].
+
 A remote is not a full backup. Accounts and local settings need backing up too. See [[Storage And Recovery]].
 
 ## Permissions

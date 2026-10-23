@@ -15,6 +15,7 @@ HMD keeps two things to look after: the Git-backed content repository and the lo
 
 ## Operate it day to day
 
+- [[Git And History]]: what HMD commits, who is credited, and how to recover.
 - [[Git Sync]]: connect an HTTPS remote, background pushes and optional bidirectional sync.
 - [[Monitoring And Maintenance]]: check readiness, sync status and broken links.
 - [[Troubleshooting]]: diagnose startup, sign-in, save and sync failures.
