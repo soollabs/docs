@@ -3,7 +3,7 @@ title: Hold My Docs
 tags: hmd, documentation
 ---
 
-**A self-hosted wiki that keeps your Markdown and its full history in Git.**
+**A wiki that gets on with it.**
 
 ![A fictional HMD wiki on a desktop and phone](/_/attachments/holdmydocs/index/hero.png)
 

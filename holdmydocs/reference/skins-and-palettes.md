@@ -11,19 +11,17 @@ Choosing a skin resets the palette to its pairing and the fonts to the skin's ow
 
 | Skin | Look | Default palette |
 | --- | --- | --- |
-| `phosphor` | Terminal green, monospace, `#` markers; the page title types itself in and links invert on hover. The default. | phosphor |
-| `newsprint` | Broadsheet: a centred masthead between double rules, serif, justified columns, an italic lede with a drop cap. | solarized |
-| `journal` | Writing first: serif, paper grain, ruled lines with a margin line, blockquotes as side notes, taped images. | everforest |
-| `soft` | Rounded and low-contrast: warm sans, a floating top bar, window dots on code blocks, callout cards. | rosé pine |
-| `bare` | No borders, wide margins, a large tight title with faint section numbers. | one dark |
-
-The phosphor title animation is skipped when the device asks for reduced motion.
+| `bare` | The default. Plain sans, wide margins, no borders or markers. | neutral |
+| `phosphor` | Terminal green, monospace, `#` markers; links invert on hover. | phosphor |
+| `newsprint` | Broadsheet: a centred masthead between double rules, serif, pull quotes. | flexoki |
+| `journal` | Writing first: serif, paper grain, a wide reading measure. | everforest |
+| `soft` | Rounded and low-contrast: warm sans, a floating top bar, callout cards. | rosé pine |
 
 ![A fictional public blog in the newsprint skin, light mode](/_/attachments/holdmydocs/reference/skins-and-palettes/newsprint-light.png)
 
 ## Palettes
 
-Eleven palettes, each with light and dark variants: `phosphor`, `catppuccin`, `dracula`, `everforest`, `gruvbox`, `monokai`, `nord`, `one dark`, `rosé pine`, `solarized`, `tokyo night`.
+Ten palettes, each with light and dark variants: `neutral`, `phosphor`, `dracula`, `everforest`, `flexoki`, `gruvbox`, `nord`, `rosé pine`, `solarized`, `tokyo night`.
 
 ## Light, dark, and system mode
 
