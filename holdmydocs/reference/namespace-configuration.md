@@ -60,7 +60,7 @@ Widgets you can list in `widgets`:
 | `public` | — | boolean, `false` | — | — | Let anyone read every page and attachment in the namespace without signing in. Public never means editable by everyone. |
 | `index` | — | string; not specified | — | — | One-segment page name that opens at /&lt;namespace&gt;/ and is the static site's homepage. |
 | `tree` | — | array; not specified | items: string | — | Order of pages and folders in the sidebar and static export. Drag to reorder; folders start collapsed and the index page stays first. |
-| `skin` | — | string; not specified | `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"`, `"bare"` | — | Skin shown to anonymous readers and in the static export. Signed-in users see their own skin. |
+| `skin` | — | string; not specified | `"bare"`, `"phosphor"`, `"newsprint"`, `"journal"`, `"soft"` | — | Skin shown to anonymous readers and in the static export. Signed-in users see their own skin. |
 | `palette` | — | string; not specified | — | — | Colour palette shown to anonymous readers and in the static export. Empty uses the skin's own palette. |
 | `image` | — | string; not specified | — | — | Link preview image for pages without an image of their own, shown when a page is shared in a chat app or social network, on public pages and in the static export. Names a PNG or JPEG attachment in this namespace as page/filename, e.g. index/hero.png. The export fails if the attachment is missing. |
 | `widgets` | — | array, `["pages", "namespaces", "tags", "log", "page-meta", "backlinks"]` | items: string | — | Sidebar widgets, in order. Leave empty for the built-in set. |
