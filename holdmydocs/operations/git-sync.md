@@ -45,10 +45,20 @@ Then open <http://127.0.0.1:8080/holdmydocs/>.
 - HMD fetches updates every 10 seconds. Reload the page to see them.
 - Keep `hmd-docs` to reuse the download next time. Use a new folder for a different repository.
 
+## Commits and history
+
+See [[Git And History]] for what HMD commits, who is credited and how to restore pages.
+
 ## Push failures
 
-A failed push does not undo the local commit. Check the sync state and server logs, fix the remote problem (credentials, network, host availability), then push from the server if needed. See [[Monitoring And Maintenance]].
+A failed push does not undo the local commit. Check the sync state and server logs, fix the remote problem (credentials, network, host availability), then run **push now** from the command palette. See [[Monitoring And Maintenance]].
+
+A push is also refused when the remote has commits the server lacks. Use `bidirectional` mode, or merge them on the server as described in [[Git And History]].
 
 ## Remote changes
 
 In `bidirectional` mode, remote changes are pulled on the sync poll. If one reaches the page you are editing, your save shows the normal conflict screen. See [[Pages]].
+
+A pull deletes uncommitted changes in the repository folder, including new files. Commit anything you change outside HMD before it syncs.
+
+If both sides have new commits, sync fails as `divergent` and HMD does not merge. See [[Git And History]] for the recovery steps.

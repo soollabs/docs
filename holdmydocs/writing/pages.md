@@ -46,7 +46,7 @@ HMD shows the title above the page, so do not repeat it as a `#` heading.
 2. Review the revisions: short hash, commit message, author and date. The current revision is marked.
 3. Select a revision and choose **revert**, or use **view** to read an old version first.
 
-Revert writes the old content as a new commit (`Revert <slug> to <short hash>`). Earlier commits are never rewritten or deleted.
+Revert writes the old content as a new commit (`Revert <slug> to <short hash>`). Earlier commits are never rewritten or deleted. See [[Git And History]] for everything HMD commits.
 
 ## When two people edit the same page
 
