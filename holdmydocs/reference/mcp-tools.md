@@ -17,6 +17,8 @@ Each tool needs one token scope. **Read-only** tools change nothing; **destructi
 | --- | --- | --- | --- |
 | `backlinks` | read | read-only | List accessible pages whose `[[wiki-links]]` point at a page. |
 | `delete_page` | write | destructive | Delete a page in one Git commit; it stays recoverable from history. Pass basehash to delete only the revision you read. |
+| `move_page` | write | destructive | Move a page to a new slug in one Git commit, keeping its title, tags, pin, history and attachments. The destination namespace must exist and new_slug must not hold a page. A namespace index page cannot be moved. Wiki-links to the page are not rewritten; check backlinks first. A conflict error returns the current hash: re-read and retry. |
+| `rename_page` | write | destructive | Change a page's title and its slug to match, in place, and rewrite wiki-links to it in other pages. A namespace index page keeps its slug. The rename is one commit; each page whose links are rewritten is its own commit, and failed_links lists pages that could not be updated. A conflict error returns the current hash: re-read and retry. |
 | `edit_page` | write | destructive | Replace exact text in an existing page's Markdown body without resending it; title, tags and pin are kept. Each oldText must match exactly once when its edit is applied, and any failed edit cancels the whole call. All edits land in one commit; dryRun returns the diff without committing. A conflict error returns the current hash: re-read and retry. |
 | `health` | read | read-only | Report dangling `[[wiki-links]]` whose target page is missing, orphan pages with no incoming links, and stale pages with no commit in 180 days. |
 | `list_namespaces` | read | read-only | List accessible namespaces with their description, page count and whether anonymous visitors can read them. Use read_namespace for full settings. |
@@ -103,6 +105,22 @@ Generated from `internal/mcp/schema/tools.json` in the pinned HMD release, the s
 | --- | --- | --- | --- | --- |
 | `slug` | string | Yes | — | page identifier in namespace/page form, e.g. notes/my-page; no segment may start with _ or . |
 | `basehash` | string | No | — | hash from read_page; when set, the page is deleted only if it is still that revision |
+
+### `move_page`
+
+| Parameter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `slug` | string | Yes | — | page identifier in namespace/page form, e.g. notes/my-page; no segment may start with _ or . |
+| `new_slug` | string | Yes | — | destination page identifier in namespace/page form |
+| `basehash` | string | Yes | — | hash from read_page; the page moves only if it is still that revision |
+
+### `rename_page`
+
+| Parameter | Type | Required | Accepted values | Description |
+| --- | --- | --- | --- | --- |
+| `slug` | string | Yes | — | page identifier in namespace/page form, e.g. notes/my-page; no segment may start with _ or . |
+| `title` | string | Yes | — | new title; the new slug is derived from it |
+| `basehash` | string | Yes | — | hash from read_page; the page is renamed only if it is still that revision |
 
 ### `edit_page`
 
